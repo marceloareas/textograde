@@ -1,0 +1,12 @@
+azure-cognitiveservices-vision-computervision
+bcrypt
+dnspython
+flask
+flask-cors
+flask-jwt-extended
+numpy
+pandas
+python-dotenv
+pillow
+pymongo
+scikit-learn

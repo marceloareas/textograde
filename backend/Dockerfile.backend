@@ -1,0 +1,29 @@
+# Usa a imagem oficial do Python
+FROM python:3.10-slim
+
+# Instala pacotes necessários do sistema operacional
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libjpeg-dev \
+    zlib1g-dev \
+    libffi-dev \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Define o diretório de trabalho dentro do container
+WORKDIR /app/backend
+
+# Copia apenas o arquivo de requirements primeiro
+COPY backend/requirements.txt ./requirements.txt
+
+# Instala as dependências
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copia todo o código da aplicação para o contêiner
+COPY . /app
+
+# Expõe a porta usada pela aplicação
+EXPOSE 5000
+
+# Define o comando padrão para iniciar a aplicação
+CMD ["flask", "run", "--host=0.0.0.0"]

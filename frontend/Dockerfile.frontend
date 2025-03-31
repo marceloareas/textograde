@@ -1,0 +1,44 @@
+# Etapa 1: Construção
+FROM node:18-alpine AS builder
+WORKDIR /app/frontend
+
+# Instala o pnpm globalmente
+RUN npm install -g pnpm
+
+# Copia apenas os arquivos de dependências
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
+
+# Instala as dependências usando pnpm
+RUN pnpm install
+
+# Copia o código fonte do frontend
+COPY frontend/ .
+
+# Build da aplicação
+RUN pnpm run build
+
+# Remove as devDependencies para reduzir o tamanho da imagem
+RUN pnpm prune --prod
+
+# Etapa 2: Execução
+FROM node:18-alpine
+WORKDIR /app/frontend
+
+# Instala o pnpm globalmente na imagem final
+RUN npm install -g pnpm
+
+# Copia apenas os arquivos necessários do estágio de construção
+COPY --from=builder /app/frontend/package.json ./
+COPY --from=builder /app/frontend/pnpm-lock.yaml ./
+COPY --from=builder /app/frontend/.next ./.next
+COPY --from=builder /app/frontend/next.config.js ./
+COPY --from=builder /app/frontend/public ./public
+
+# Instala apenas as dependências de produção
+RUN pnpm install --prod
+
+# Expondo a porta 3000 (ou a porta que você configurar no Next.js)
+EXPOSE 3000
+
+# Comando para iniciar a aplicação
+CMD ["pnpm", "start"]

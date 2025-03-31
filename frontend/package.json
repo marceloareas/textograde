@@ -1,0 +1,33 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p 3030",
+    "lint": "next lint",
+    "prod": "next build && next start"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.5.2",
+    "@types/js-cookie": "^3.0.6",
+    "antd": "^5.3.0",
+    "axios": "^1.7.9",
+    "eslint": "8.36.0",
+    "eslint-config-next": "13.2.4",
+    "js-cookie": "^3.0.5",
+    "next": "13.2.4",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "styled-components": "^6.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "18.15.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "18.0.11",
+    "react-markdown": "^7.0.0",
+    "rehype-raw": "^6.1.1",
+    "typescript": "^5.7.2"
+  }
+}
