@@ -19,6 +19,13 @@ services:
       - mongodb
     networks:
       - my_custom_network
+    deploy:  
+      resources:
+        limits: # Segundo Limite Backend
+          cpus: "1.0"   
+          memory: 512M   
+        reservations: # Primeiro Limite Backend
+          memory: 128M
 
   mongodb:
     image: mongo:latest
@@ -34,6 +41,14 @@ services:
     restart: always
     networks:
       - my_custom_network
+    deploy:  
+      resources:
+        limits: # Segundo limite MongoDB
+          cpus: "1.0"    
+          memory: 1G
+        reservations: # Primeiro Limite MongoDB
+          cpus: "0.25"
+          memory: 128M
 
   mongo-express:
     image: mongo-express
@@ -46,6 +61,15 @@ services:
       - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/textgrader?authSource=admin
     networks:
       - my_custom_network
+    deploy:  
+      resources:
+        limits: # Segundo Limite MongoDB Express
+          cpus: "0.5"   
+          memory: 256M
+
+        reservations:  # Primeiro Limite MongoDB Express
+          cpus: "0.25"
+          memory: 128M
 
   frontend:
     build:
@@ -57,6 +81,15 @@ services:
     restart: unless-stopped
     networks:
       - my_custom_network
+    deploy:  
+      resources:
+        limits: # Segundo Limite Front
+          cpus: "0.5"   
+          memory: 256M  
+        reservations: # Primeiro Limite Front
+          cpus: "0.25"
+          memory: 128M
+          
 
 volumes:
   mongo_data:
