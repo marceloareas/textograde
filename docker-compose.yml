@@ -22,8 +22,8 @@ services:
     deploy:  
       resources:
         limits: # Segundo Limite Backend
-          cpus: "1.0"   
-          memory: 512M   
+          cpus: "0.5"   
+          memory: 256M   
         reservations: # Primeiro Limite Backend
           memory: 128M
 
@@ -45,7 +45,7 @@ services:
       resources:
         limits: # Segundo limite MongoDB
           cpus: "1.0"    
-          memory: 1G
+          memory: 256M
         reservations: # Primeiro Limite MongoDB
           cpus: "0.25"
           memory: 128M
@@ -65,11 +65,11 @@ services:
       resources:
         limits: # Segundo Limite MongoDB Express
           cpus: "0.5"   
-          memory: 256M
+          memory: 128M
 
         reservations:  # Primeiro Limite MongoDB Express
           cpus: "0.25"
-          memory: 128M
+          memory: 64M
 
   frontend:
     build:
