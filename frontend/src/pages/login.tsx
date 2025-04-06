@@ -8,36 +8,47 @@ import styled from "styled-components";
 const { Content } = Layout;
 
 const Container = styled(Layout)`
-  height: calc(100vh - 46px - 64px);  
+  min-height: calc(100vh - 64px - 46px);
   display: flex;
   justify-content: center;
   align-items: center;
 `;
 
 const FormContainer = styled(Content)`
-  padding: 20px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
   border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
   width: 350px;
   max-height: 450px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  position: relative;
+  gap: 20px;
 `;
 
 const Title = styled.h2`
-  margin-bottom: 20px;
   text-align: center;
 `;
 
 const InputGroup = styled.div`
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  gap: 10px;
 `;
 
-const TextCenter = styled.div`
+const BottomContent = styled.div`
   text-align: center;
+  position: absolute;
+  bottom: 40px;
+`;
+
+const FullContainer = styled.div`
+  display: flex;
+  width: 100%;
+  align-items: center;
 `;
 
 const Login = () => {
@@ -80,9 +91,7 @@ const Login = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-        </InputGroup>
 
-        <InputGroup>
           <Input.Password
             placeholder="Senha"
             value={password}
@@ -90,18 +99,26 @@ const Login = () => {
           />
         </InputGroup>
 
-        <TextCenter>
-          <Button type="primary" onClick={handleLogin}>
+        {/* <FullContainer>
+          <Link href="/esqueceu-sua-senha">Esqueceu sua senha?</Link>
+        </FullContainer> */}
+
+        <FullContainer>
+          <div style={{ display: "flex", width: "300px", justifyContent: "space-between" }}>
+            <Link href="/esqueceu-sua-senha">Esqueceu a senha?</Link>
+          </div>
+
+          <Button block type="primary" onClick={handleLogin}>
             Entrar
           </Button>
-        </TextCenter>
+        </FullContainer>
 
-        <TextCenter style={{ marginTop: "10px" }}>
+        <BottomContent>
           <Typography.Text>
-            Não possui uma conta?{" "}
-            <Link href="/cadastro">Cadastre-se aqui!</Link>
+            Não possui conta?{" "}
+            <Link href="/cadastro">Cadastre-se!</Link>
           </Typography.Text>
-        </TextCenter>
+        </BottomContent>
       </FormContainer>
     </Container>
   );
