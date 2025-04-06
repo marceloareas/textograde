@@ -9,13 +9,15 @@ import styled from "styled-components";
 const { Content } = Layout;
 
 const FormWrapper = styled(Content)`
-  padding: 20px;
+  padding: 20px 40px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 300px;
+  width: 350px;
+  max-height: 450px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 `;
 
 const CheckboxGroup = styled.div`
@@ -103,7 +105,7 @@ const Cadastro = () => {
   return (
     <Layout
       style={{
-        minHeight: "50vh",
+        height: "calc(100vh - 46px - 64px)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",

@@ -8,17 +8,22 @@ import styled from "styled-components";
 const { Content } = Layout;
 
 const Container = styled(Layout)`
-  min-height: 40vh;
+  height: calc(100vh - 46px - 64px);  
   display: flex;
   justify-content: center;
   align-items: center;
 `;
 
 const FormContainer = styled(Content)`
-  padding: 20px;
+  padding: 20px 40px;
   border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-  width: 300px;
+  width: 350px;
+  max-height: 450px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 `;
 
 const Title = styled.h2`
@@ -28,6 +33,7 @@ const Title = styled.h2`
 
 const InputGroup = styled.div`
   margin-bottom: 20px;
+  width: 100%;
 `;
 
 const TextCenter = styled.div`
@@ -90,7 +96,7 @@ const Login = () => {
           </Button>
         </TextCenter>
 
-        <TextCenter>
+        <TextCenter style={{ marginTop: "10px" }}>
           <Typography.Text>
             Não possui uma conta?{" "}
             <Link href="/cadastro">Cadastre-se aqui!</Link>
