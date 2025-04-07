@@ -41,9 +41,11 @@ const FullContainer = styled.div`
 `;
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
   const { isLoggedIn } = useAuth();
   const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [hasError, setHasError] = useState<boolean>(false);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -59,8 +61,10 @@ const ForgotPassword = () => {
 
     try {
       // TO DO - Implementar a lógica de envio de email para redefinição de senha
+      // throw new Error("Email não encontrado.");
       router.push("/redefinir-senha-codigo/");
     } catch (error) {
+      setHasError(true);
       message.error(
         "Ocorreu ao enviar o email. Verifique se o email está correto."
       );
@@ -78,7 +82,11 @@ const ForgotPassword = () => {
             placeholder="Digite seu email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            status={hasError ? "error" : undefined}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setHasError(false);
+            }}
           />
         </InputGroup>
 

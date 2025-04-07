@@ -48,6 +48,7 @@ const ResetPasswordCode = () => {
   const router = useRouter();
 
   const [code, setCode] = useState("");
+  const [hasError, setHasError] = useState<boolean>(false);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -58,8 +59,10 @@ const ResetPasswordCode = () => {
   const handleSendResetPasswordToEmail = async () => {
     try {
       // TO DO - Implementar a lógica de envio de email para redefinição de senha
+      // throw new Error("Functionality not implemented yet.");
       router.push("/redefinir-senha/");
     } catch (error) {
+      setHasError(true);
       message.error(
         "Código Incorreto."
       );
@@ -74,10 +77,12 @@ const ResetPasswordCode = () => {
 
         <InputGroup>
           <Input.OTP
+            status={hasError ? "error" : undefined}
             type="text"
             size="large"
             value={code}
             formatter={(value) => {
+              setHasError(false);
               setCode(value.replace(/\D/g, ""));
               return value.replace(/\D/g, "")}
             }

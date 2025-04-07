@@ -41,10 +41,12 @@ const FullContainer = styled.div`
 `;
 
 const ResetPassword = () => {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const { isLoggedIn } = useAuth();
   const router = useRouter();
+
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [hasError, setHasError] = useState<boolean>(false);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -58,11 +60,17 @@ const ResetPassword = () => {
       return;
     }
 
+    if (password !== confirmPassword) {
+      message.warning("As senhas não são iguais.");
+      setHasError(true);
+      return;
+    }
+
     try {
       // TO DO - Implementar a lógica de envio de email para redefinição de senha
     } catch (error) {
       message.error(
-        "Ocorreu ao redefinir sua senha. Verifique se os dados estão corretos."
+        "Ocorreu um erro ao redefinir sua senha. Verifique se os dados estão corretos."
       );
     }
   };
@@ -76,16 +84,24 @@ const ResetPassword = () => {
         <InputGroup>
           <Input.Password
             placeholder="Digite sua nova Senha"
+            status={hasError ? "error" : undefined}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setHasError(false);
+              setPassword(e.target.value)
+            }}
           />
         </InputGroup>
 
         <InputGroup>
           <Input.Password 
             placeholder="Confirme sua nova Senha"
+            status={hasError ? "error" : undefined}
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={(e) => {
+              setHasError(false);
+              setConfirmPassword(e.target.value)
+            }}
           />
         </InputGroup>
 
