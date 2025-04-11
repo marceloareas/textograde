@@ -4,6 +4,7 @@ import { Redacao } from "@/pages/textgrader";
 import { useAuth } from "@/context";
 import TextArea from "antd/lib/input/TextArea";
 import { API_URL } from "@/config/config";
+import { client } from "../../services/client";
 
 interface RedacaoDetalhes {
   open: boolean;
@@ -43,22 +44,15 @@ const ModalDetalhesRedacao: React.FC<RedacaoDetalhes> = ({
       }
 
       if (redacao && gradesEdited && tipoUsuario === "professor") {
-        const response = await fetch(`${API_URL}/redacao/${redacao._id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            nota_competencia_1_model: notaComp1Editada ?? 0,
-            nota_competencia_2_model: notaComp2Editada ?? 0,
-            nota_competencia_3_model: notaComp3Editada ?? 0,
-            nota_competencia_4_model: notaComp4Editada ?? 0,
-            nota_competencia_5_model: notaComp5Editada ?? 0,
-          }),
+        const { data } = await client.put(`/redacao/${redacao._id}`, {
+          nota_competencia_1_model: notaComp1Editada ?? 0,
+          nota_competencia_2_model: notaComp2Editada ?? 0,
+          nota_competencia_3_model: notaComp3Editada ?? 0,
+          nota_competencia_4_model: notaComp4Editada ?? 0,
+          nota_competencia_5_model: notaComp5Editada ?? 0,
         });
 
-        if (response.ok) {
+        if (data) {
           message.success("Redação atualizada com sucesso!");
           onCancel();
           onRedacaoEditado({ ...redacao });

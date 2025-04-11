@@ -4,6 +4,8 @@ import { useAuth } from "@/context";
 import router from "next/router";
 import styled from "styled-components";
 import { API_URL } from "@/config/config";
+import axios from "axios";
+import { client } from "../../../services/client";
 
 const Container = styled.div`
   display: flex;
@@ -39,25 +41,21 @@ const Tema = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/tema`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+      const response = await client.post(
+        `/tema`,
+        {
           nome_professor: nomeUsuario,
           tema: values.nomeTema,
           descricao: values.descricaoTema,
-        }),
-      });
+        },
+      );
 
-      if (response.ok) {
+      if (response.status === 201) {
         message.success("Tema cadastrado com sucesso!");
         form.resetFields();
         router.push("/textgrader/");
       } else {
-        const errorData = await response.json();
+        const errorData = response.data;
         message.error(errorData.error || "Erro ao cadastrar o tema.");
       }
     } catch (error) {

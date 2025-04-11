@@ -3,7 +3,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: /backend/Dockerfile.backend
+      dockerfile: ./backend/Dockerfile.backend
     container_name: textgrader_backend
     command: flask run --host=0.0.0.0
     environment:
