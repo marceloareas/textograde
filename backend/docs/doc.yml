@@ -1,0 +1,120 @@
+info:
+  title: API de Recuperação de Senha
+  version: 1.0.0
+
+paths:
+  /forgot-password:
+    post:
+      tags:
+        - Autenticação
+      summary: Enviar código de recuperação por email
+      description: Envia um código de recuperação de senha para o email do usuário.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  description: O email do usuário para enviar o código de recuperação.
+                  example: usuario@email.com
+      responses:
+        '200':
+          description: Email de recuperação enviado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: email de recuperação enviado com sucesso
+        '404':
+          description: Usuário não encontrado
+        '500':
+          description: Erro ao enviar email ou erro interno
+
+  /verify-code:
+    post:
+      tags:
+        - Autenticação
+      summary: Verificar código de recuperação
+      description: Verifica se o código informado está correto e ainda está dentro do prazo de validade.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - code
+              properties:
+                email:
+                  type: string
+                  example: usuario@email.com
+                code:
+                  type: string
+                  example: '12345'
+      responses:
+        '200':
+          description: Código verificado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+        '400':
+          description: Código inválido ou expirado
+        '404':
+          description: Usuário não encontrado
+
+  /reset-password:
+    post:
+      tags:
+        - Autenticação
+      summary: Redefinir senha
+      description: Redefine a senha de um usuário autenticado com token de recuperação.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - new_password
+              properties:
+                new_password:
+                  type: string
+                  example: minhaNovaSenha123
+      responses:
+        '200':
+          description: Senha atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: Senha atualizada com sucesso
+        '400':
+          description: Nova senha não informada
+        '500':
+          description: Erro interno
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -10,9 +10,10 @@ from msrest.authentication import CognitiveServicesCredentials
 from dotenv import load_dotenv
 import os
 import time
+import requests
 load_dotenv()
 
-# Configure sua chave de API da AZURE
+#Configure sua chave de API da AZURE
 try:
     load_dotenv()
     subscription_key = os.getenv('SUBSCRIPTION_KEY')
@@ -85,3 +86,24 @@ def get_text(imagem):
         return text.strip()
     else:
         return "Erro"
+    
+def send_email(subject, recipient_email, body):
+    response = requests.post(
+        f"https://api.mailgun.net/v3/{os.getenv('MAILGUN_DOMAIN')}/messages",
+        auth=("api", os.getenv('MAILGUN_API_KEY')),
+        data={
+            "from": f"TextGrader <mailgun@{os.getenv('MAILGUN_DOMAIN')}>",
+            "to": [recipient_email],
+            "subject": subject,
+            "text": body
+        }
+    )
+    
+    if response.status_code == 200:
+        print("Email enviado com sucesso!")
+        return True
+    else:
+        print("Falha ao enviar email.")
+        print("Status:", response.status_code)
+        print("Detalhes:", response.text)
+        return False

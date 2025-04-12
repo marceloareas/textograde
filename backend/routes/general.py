@@ -1,9 +1,12 @@
+import random
+from functions import send_email
 from flask import Blueprint, request, jsonify
 from pymongo import MongoClient, errors
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt, get_jwt_identity, JWTManager
 import bcrypt
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
+from pytz import utc
 
 # Blueprint para rotas gerais
 general_bp = Blueprint('general', __name__)
@@ -132,3 +135,113 @@ def profile():
 
     except Exception as e:
         return jsonify({"error": f"Erro interno: {str(e)}"}), 500
+
+@general_bp.route("/forgot-password", methods=["POST"])
+def forgotPassword():
+    try:
+        data = request.json
+        email = data.get('email')
+        print(email)
+       
+        user = db.users.find_one({"email": email})
+    
+        if not user:
+            return jsonify({"error": "Usuário não encontrado"}), 404
+        
+        code = random.randint(10000, 99999)
+        recovery_code = str(code)
+
+        # 1 hora de expiração
+        recovery_code_expiration = datetime.now(timezone.utc) + timedelta(hours=1)
+        
+        db.users.update_one(
+            {"_id": user["_id"]},
+            {
+                "$set": {
+                    "recovery_code": recovery_code,
+                    "recovery_code_expiration": recovery_code_expiration
+                }
+            }
+        )
+        
+        isSent = send_email(
+            subject="Recuperação de senha",
+            recipient_email=email,
+            body=f"TextGrader - Seu código para recuperação da senha é {recovery_code}"
+        )
+        
+        if(isSent == False):
+            return jsonify({"status": "erro ao enviar email"}), 500
+        
+        return jsonify({"status": "email de recuperação enviado com sucesso"}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Erro interno: {str(e)}"}), 500
+
+@general_bp.route("/verify-code", methods=["POST"])
+def verify_code():
+    try:
+        data = request.json
+        email = data.get("email")
+        code = data.get("code")
+
+        if not email or not code:
+            return jsonify({"error": "Email e código são obrigatórios"}), 400
+
+        user = db.users.find_one({"email": email})
+
+        if not user:
+            return jsonify({"error": "Usuário não encontrado"}), 404
+
+        recovery_code = user.get("recovery_code")
+        recovery_code_expiration = user.get("recovery_code_expiration")
+
+        if not recovery_code or not recovery_code_expiration:
+            return jsonify({"error": "Nenhum código de recuperação solicitado"}), 400
+
+        if recovery_code_expiration.tzinfo is None:
+            recovery_code_expiration = recovery_code_expiration.replace(tzinfo=utc)
+
+        if datetime.now(timezone.utc) > recovery_code_expiration:
+            return jsonify({"error": "O código expirou"}), 400
+
+        if code != recovery_code:
+            return jsonify({"error": "Código inválido"}), 400
+
+        db.users.update_one(
+            {"_id": user["_id"]},
+            {"$unset": {"recovery_code": "", "recovery_code_expiration": ""}}
+        )
+
+        access_token = create_access_token(identity=email, expires_delta=timedelta(hours=1))
+
+        return jsonify({"access_token": access_token}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Erro interno: {str(e)}"}), 500
+
+@general_bp.route("/reset-password", methods=["POST"])
+@jwt_required()
+def reset_password():
+    try:
+        data = request.json
+        new_password = data.get("new_password")
+
+        if not new_password:
+            return jsonify({"error": "Nova senha é obrigatória"}), 400
+
+        email = get_jwt_identity()
+        
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+        # Atualiza no banco
+        db.users.update_one(
+            {"email": email},
+            {"$set": {"password": hashed_password}}
+        )
+
+        return jsonify({"status": "Senha atualizada com sucesso"}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Erro interno: {str(e)}"}), 500
+    
