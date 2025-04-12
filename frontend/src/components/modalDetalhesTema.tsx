@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Tema } from "@/pages/textgrader";
 import { useAuth } from "@/context";
 import { API_URL } from "@/config/config";
+import { client } from "../../services/client";
 
 interface TemaDetalhes {
   open: boolean;
@@ -29,22 +30,14 @@ const ModalDetalhesTema: React.FC<TemaDetalhes> = ({
 
     try {
       if (tema && (descricaoEditada !== "" || temaEditado !== "")) {
-        // Adicionando o token na requisição para garantir que está autenticado
-        const response = await fetch(`${API_URL}/tema/${tema._id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            tema: temaEditado !== "" ? temaEditado : tema.tema,
-            descricao:
-              descricaoEditada !== "" ? descricaoEditada : tema.descricao,
-            nome_professor: tema.nome_professor,
-          }),
+        const { data } = await client.put(`${API_URL}/tema/${tema._id}`, {
+          tema: temaEditado !== "" ? temaEditado : tema.tema,
+          descricao:
+            descricaoEditada !== "" ? descricaoEditada : tema.descricao,
+          nome_professor: tema.nome_professor,
         });
 
-        if (response.ok) {
+        if (data) {
           message.success("Tema atualizado com sucesso!");
           onCancel();
           onTemaEditado({

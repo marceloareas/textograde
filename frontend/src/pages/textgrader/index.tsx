@@ -7,6 +7,7 @@ import CustomTable from "../../components/customTable";
 import ModalDetalhesTema from "@/components/modalDetalhesTema";
 import ModalDetalhesRedacao from "@/components/modalDetalhesRedacao";
 import { API_URL } from "@/config/config";
+import { client } from "../../../services/client";
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -77,13 +78,8 @@ const Index = () => {
   useEffect(() => {
     const fetchTemas = async () => {
       try {
-        const token = getAuthToken();
-        const response = await fetch(`${API_URL}/tema`, {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-        });
-        const data = await response.json();
+        const { data } = await client.get("/tema");
+        
         if (Array.isArray(data)) {
           setTemasData(data);
         } else {
@@ -96,23 +92,31 @@ const Index = () => {
       }
     };
 
+    const fetchAlunos = async () => {
+      try {
+        const { data } = await client.get(`/alunos`);
+
+        if (Array.isArray(data)) {
+          setAlunos(data);
+        } else {
+          console.error("Dados inválidos recebidos para alunos:", data);
+          setAlunos([]);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar alunos:", error);
+        setAlunos([]);
+      }
+    };
+    
     fetchTemas();
+    fetchAlunos();
   }, []);
 
   useEffect(() => {
     const fetchRedacoes = async () => {
       try {
-        const token = getAuthToken();
-        let url = `${API_URL}/redacao`;
-        if (tipoUsuario === "aluno") {
-          url += `?user=${nomeUsuario}`;
-        }
-        const response = await fetch(url, {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-        });
-        const data = await response.json();
+        const { data } = await client.get(`/redacao${tipoUsuario === "aluno" && `?user=${nomeUsuario}`}`);
+        
         if (Array.isArray(data)) {
           setRedacoesData(data);
         } else {
@@ -128,42 +132,11 @@ const Index = () => {
     fetchRedacoes();
   }, [tipoUsuario, nomeUsuario]);
 
-  useEffect(() => {
-    const fetchAlunos = async () => {
-      try {
-        const token = getAuthToken();
-        const response = await fetch(`${API_URL}/alunos`, {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-        });
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setAlunos(data);
-        } else {
-          console.error("Dados inválidos recebidos para alunos:", data);
-          setAlunos([]);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar alunos:", error);
-        setAlunos([]);
-      }
-    };
-
-    fetchAlunos();
-  }, []);
-
   const handleDeleteTema = async (id: string) => {
     try {
-      const token = getAuthToken();
-      const response = await fetch(`${API_URL}/tema/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
+      const { data } = await client.delete(`/tema/${id}`);
 
-      if (response.ok) {
+      if (data) {
         setTemasData(temasData.filter((tema) => tema._id !== id));
         message.success("Tema deletado com sucesso!");
       }

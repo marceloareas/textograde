@@ -27,6 +27,8 @@ mongo_uri = os.getenv("MONGO_URI")
 client = MongoClient(mongo_uri)
 db = client["textgrader"]
 
+app.url_map.strict_slashes = False
+
 # Inicializar rotas de livre acesso (sem autenticação)
 app.register_blueprint(general_bp)
 
