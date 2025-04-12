@@ -10,3 +10,6 @@ python-dotenv
 pillow
 pymongo
 scikit-learn
+flask-cors
+requests
+flasgger

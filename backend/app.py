@@ -8,12 +8,15 @@ from routes.general import general_bp
 from routes.user import user_bp
 from routes.tema import tema_bp
 from routes.redacao import redacao_bp
+from flasgger import Swagger
 
 # Carregar variáveis do .env
 load_dotenv()
 
 app = Flask(__name__)
+swagger = Swagger(app, template_file='docs/doc.yml')
 CORS(app)
+
 
 # Configuração do JWT
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "chave_secreta_padrao")
