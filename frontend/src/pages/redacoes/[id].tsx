@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { ReactElement, useEffect, useState } from 'react';
-import { client } from '../../../services/client';
+import { client } from '../../services/client';
 
 type Essay = {
   _id: string;

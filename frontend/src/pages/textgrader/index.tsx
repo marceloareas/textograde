@@ -7,7 +7,7 @@ import CustomTable from "../../components/customTable";
 import ModalDetalhesTema from "@/components/modalDetalhesTema";
 import ModalDetalhesRedacao from "@/components/modalDetalhesRedacao";
 import { API_URL } from "@/config/config";
-import { client } from "../../../services/client";
+import { client } from "../../services/client";
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -52,14 +52,6 @@ const Index = () => {
   const [filter, setFilter] = useState<string>("todos");
   const [filterAluno, setFilterAluno] = useState<string>("todos");
   const { isLoggedIn, tipoUsuario, nomeUsuario } = useAuth();
-
-  // Função para obter o token de autenticação do cookie
-  const getAuthToken = () => {
-    const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("auth_token="));
-    return token ? token.split("=")[1] : null;
-  };
 
   const handleTabChange = (key: string) => {
     setActiveKey(key);

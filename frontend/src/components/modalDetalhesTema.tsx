@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Tema } from "@/pages/textgrader";
 import { useAuth } from "@/context";
 import { API_URL } from "@/config/config";
-import { client } from "../../services/client";
+import { client } from "../services/client";
 
 interface TemaDetalhes {
   open: boolean;

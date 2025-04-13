@@ -19,11 +19,11 @@ const FormContainer = styled(Content)`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 20px 40px;
   border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
   width: 350px;
-  max-height: 450px;
+  max-height: 400px;
   position: relative;
   gap: 20px;
 `;
@@ -47,6 +47,7 @@ const BottomContent = styled.div`
 
 const FullContainer = styled.div`
   display: flex;
+  justify-content: space-between;
   width: 100%;
   align-items: center;
 `;
@@ -104,13 +105,15 @@ const Login = () => {
         </FullContainer> */}
 
         <FullContainer>
-          <div style={{ display: "flex", width: "300px", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", width: "130px", justifyContent: "space-between" }}>
             <Link href="/esqueceu-sua-senha">Esqueceu a senha?</Link>
           </div>
 
-          <Button block type="primary" onClick={handleLogin}>
-            Entrar
-          </Button>
+          <div style={{ display: "flex", minWidth: "130px", justifyContent: "space-between" }}>
+            <Button block type="primary" onClick={handleLogin}>
+              Entrar
+            </Button>
+          </div>
         </FullContainer>
 
         <BottomContent>

@@ -4,7 +4,7 @@ import { Redacao } from "@/pages/textgrader";
 import { useAuth } from "@/context";
 import TextArea from "antd/lib/input/TextArea";
 import { API_URL } from "@/config/config";
-import { client } from "../../services/client";
+import { client } from "../services/client";
 
 interface RedacaoDetalhes {
   open: boolean;

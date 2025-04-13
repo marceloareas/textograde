@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Button, Input, Layout, message } from "antd";
 import { useRouter } from "next/router";
 import { useAuth } from "../context";
 import styled from "styled-components";
+import { client } from "@/services/client";
 
 const { Content } = Layout;
 
@@ -54,7 +55,9 @@ const ResetPassword = () => {
     }
   }, [isLoggedIn, router]);
 
-  const handleSendResetPasswordToEmail = async () => {
+  const handleChangePassword = async (e: FormEvent<HTMLDivElement>) => {
+    e.preventDefault();
+      
     if (!password || !confirmPassword) {
       message.warning("Por favor, preencha todos os campos.");
       return;
@@ -67,7 +70,15 @@ const ResetPassword = () => {
     }
 
     try {
-      // TO DO - Implementar a lógica de envio de email para redefinição de senha
+      const { data } = await client.post("/reset-password", {
+        new_password: password,
+      });
+
+      if (data.status) {
+        message.success("Senha redefinida com sucesso!");
+        router.push("/login");
+        return;
+      }
     } catch (error) {
       message.error(
         "Ocorreu um erro ao redefinir sua senha. Verifique se os dados estão corretos."
@@ -78,7 +89,7 @@ const ResetPassword = () => {
   return (
     <Container>
       <title>Redefinir Senha</title>
-      <FormContainer>
+      <FormContainer onSubmit={handleChangePassword}>
         <Title>Redefina sua senha</Title>
 
         <InputGroup>
@@ -89,6 +100,11 @@ const ResetPassword = () => {
             onChange={(e) => {
               setHasError(false);
               setPassword(e.target.value)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleChangePassword(e);
+              }
             }}
           />
         </InputGroup>
@@ -102,11 +118,16 @@ const ResetPassword = () => {
               setHasError(false);
               setConfirmPassword(e.target.value)
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleChangePassword(e);
+              }
+            }}
           />
         </InputGroup>
 
         <FullContainer>
-          <Button block type="primary" onClick={handleSendResetPasswordToEmail}>
+          <Button block type="primary" htmlType="submit">
             Redefinir senha
           </Button>
         </FullContainer>

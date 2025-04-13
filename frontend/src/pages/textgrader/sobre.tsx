@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import styled from "styled-components";
 import { Card, Layout } from "antd";
-import { client } from "../../../services/client";
+import { client } from "../../services/client";
 
 const StyledLayout = styled(Layout)`
   display: flex;

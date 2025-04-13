@@ -5,7 +5,7 @@ import router from "next/router";
 import styled from "styled-components";
 import { API_URL } from "@/config/config";
 import axios from "axios";
-import { client } from "../../../services/client";
+import { client } from "../../services/client";
 
 const Container = styled.div`
   display: flex;

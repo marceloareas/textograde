@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Button, Input, Layout, message } from "antd";
 import { useRouter } from "next/router";
 import { useAuth } from "../context";
 import styled from "styled-components";
+import { client } from "../services/client";
 
 const { Content } = Layout;
 
@@ -17,7 +18,7 @@ const FormContainer = styled(Content)`
   padding: 20px 40px;
   border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-  width: 350px;
+  width: 330px;
   max-height: 300px;
   display: flex;
   flex-direction: column;
@@ -53,16 +54,20 @@ const ForgotPassword = () => {
     }
   }, [isLoggedIn, router]);
 
-  const handleSendResetPasswordToEmail = async () => {
+  const handleSendResetPasswordToEmail = async (e: FormEvent<HTMLDivElement>) => {
+    e.preventDefault();
+
     if (!email) {
       message.warning("Por favor, preencha todos os campos.");
       return;
     }
 
     try {
-      // TO DO - Implementar a lógica de envio de email para redefinição de senha
-      // throw new Error("Email não encontrado.");
-      router.push("/redefinir-senha-codigo/");
+      const { data } = await client.post("/forgot-password", { email });
+
+      message.success("Código de recuperação enviado!");
+
+      if (data.status) router.push("/confirmar-codigo?email=" + email);
     } catch (error) {
       setHasError(true);
       message.error(
@@ -74,7 +79,7 @@ const ForgotPassword = () => {
   return (
     <Container>
       <title>Esqueceu sua senha</title>
-      <FormContainer>
+      <FormContainer onSubmit={handleSendResetPasswordToEmail}>
         <Title>Esqueceu sua senha?</Title>
 
         <InputGroup>
@@ -91,7 +96,7 @@ const ForgotPassword = () => {
         </InputGroup>
 
         <FullContainer>
-          <Button block type="primary" onClick={handleSendResetPasswordToEmail}>
+          <Button block type="primary" htmlType="submit">
             Redefinir senha
           </Button>
         </FullContainer>

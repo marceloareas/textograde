@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Button, Input, Layout, message } from "antd";
 import { useRouter } from "next/router";
 import { useAuth } from "../context";
 import styled from "styled-components";
+import { client } from "@/services/client";
 
 const { Content } = Layout;
 
@@ -14,10 +15,10 @@ const Container = styled(Layout)`
 `;
 
 const FormContainer = styled(Content)`
-  padding: 20px 40px;
+  padding: 20px 50px;
   border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-  width: 350px;
+  width: 300px;
   max-height: 300px;
   display: flex;
   flex-direction: column;
@@ -46,6 +47,7 @@ const FullContainer = styled.div`
 const ResetPasswordCode = () => {
   const { isLoggedIn } = useAuth();
   const router = useRouter();
+  const { email } = router.query;
 
   const [code, setCode] = useState("");
   const [hasError, setHasError] = useState<boolean>(false);
@@ -56,11 +58,16 @@ const ResetPasswordCode = () => {
     }
   }, [isLoggedIn, router]);
 
-  const handleSendResetPasswordToEmail = async () => {
+  const handleCheckCode = async (e: FormEvent<HTMLDivElement>) => {
+    e.preventDefault();
+
     try {
-      // TO DO - Implementar a lógica de envio de email para redefinição de senha
-      // throw new Error("Functionality not implemented yet.");
-      router.push("/redefinir-senha/");
+      const { data } = await client.post("/verify-code", { email, code });
+
+      if (data.access_token) {
+        localStorage.setItem("accessToken", data.access_token);
+        router.push("/redefinir-senha/");
+      }
     } catch (error) {
       setHasError(true);
       message.error(
@@ -72,7 +79,7 @@ const ResetPasswordCode = () => {
   return (
     <Container>
       <title>Redefinir senha</title>
-      <FormContainer>
+      <FormContainer onSubmit={handleCheckCode}>
         <Title>Redefinir senha</Title>
 
         <InputGroup>
@@ -87,11 +94,16 @@ const ResetPasswordCode = () => {
               return value.replace(/\D/g, "")}
             }
             length={5}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && code.length === 5) {
+                handleCheckCode(e);
+              }
+            }}
           />
         </InputGroup>
 
         <FullContainer>
-          <Button disabled={!code || code.length < 5} block type="primary" onClick={handleSendResetPasswordToEmail}>
+          <Button disabled={!code || code.length < 5} block type="primary" htmlType="submit">
             Continuar
           </Button>
         </FullContainer>
