@@ -66,7 +66,7 @@ const Sobre = () => {
 
   useEffect(() => {
     client.get("/Sobre.md")
-      .then((response) => response.text())
+      .then((response) => response.data)
       .then((text) => setContent(text));
   }, []);
 

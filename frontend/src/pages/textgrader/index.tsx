@@ -107,7 +107,7 @@ const Index = () => {
   useEffect(() => {
     const fetchRedacoes = async () => {
       try {
-        const { data } = await client.get(`/redacao${tipoUsuario === "aluno" && `?user=${nomeUsuario}`}`);
+        const { data } = await client.get(`/redacao${tipoUsuario === "aluno" ? `?user=${nomeUsuario}` : ""}`);
         
         if (Array.isArray(data)) {
           setRedacoesData(data);
