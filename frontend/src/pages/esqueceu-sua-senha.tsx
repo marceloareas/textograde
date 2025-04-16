@@ -14,12 +14,13 @@ const Container = styled(Layout)`
   align-items: center;
 `;
 
-const FormContainer = styled(Content)`
+const FormContainer = styled.form`
   padding: 20px 40px;
   border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
   width: 330px;
   max-height: 300px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -54,7 +55,7 @@ const ForgotPassword = () => {
     }
   }, [isLoggedIn, router]);
 
-  const handleSendResetPasswordToEmail = async (e: FormEvent<HTMLDivElement>) => {
+  const handleSendResetPasswordToEmail = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!email) {
@@ -95,7 +96,7 @@ const ForgotPassword = () => {
           />
         </InputGroup>
 
-        <FullContainer>
+        <FullContainer onSubmit={() => alert("CLICK")}>
           <Button block type="primary" htmlType="submit">
             Redefinir senha
           </Button>

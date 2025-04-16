@@ -110,8 +110,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchToken = async () => {
       const tokenFromStorage = await getAuthToken();
-  
-      if (tokenFromStorage) {
+
+      if (tokenFromStorage && isLoggedIn) {
         setToken(tokenFromStorage);
   
         axios

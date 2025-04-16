@@ -14,12 +14,13 @@ const Container = styled(Layout)`
   align-items: center;
 `;
 
-const FormContainer = styled(Content)`
+const FormContainer = styled.form`
   padding: 20px 40px;
   border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
   width: 350px;
   max-height: 300px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -55,7 +56,7 @@ const ResetPassword = () => {
     }
   }, [isLoggedIn, router]);
 
-  const handleChangePassword = async (e: FormEvent<HTMLDivElement>) => {
+  const handleChangePassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
       
     if (!password || !confirmPassword) {
@@ -76,6 +77,7 @@ const ResetPassword = () => {
 
       if (data.status) {
         message.success("Senha redefinida com sucesso!");
+        localStorage.removeItem("accessToken");
         router.push("/login");
         return;
       }
@@ -88,7 +90,7 @@ const ResetPassword = () => {
 
   return (
     <Container>
-      <title>Redefinir Senha</title>
+      <title>Confirme o código</title>
       <FormContainer onSubmit={handleChangePassword}>
         <Title>Redefina sua senha</Title>
 
@@ -101,11 +103,6 @@ const ResetPassword = () => {
               setHasError(false);
               setPassword(e.target.value)
             }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleChangePassword(e);
-              }
-            }}
           />
         </InputGroup>
 
@@ -117,11 +114,6 @@ const ResetPassword = () => {
             onChange={(e) => {
               setHasError(false);
               setConfirmPassword(e.target.value)
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleChangePassword(e);
-              }
             }}
           />
         </InputGroup>

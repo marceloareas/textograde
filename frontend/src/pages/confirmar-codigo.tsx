@@ -14,12 +14,13 @@ const Container = styled(Layout)`
   align-items: center;
 `;
 
-const FormContainer = styled(Content)`
+const FormContainer = styled.form`
   padding: 20px 50px;
   border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
   width: 300px;
   max-height: 300px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -58,7 +59,7 @@ const ResetPasswordCode = () => {
     }
   }, [isLoggedIn, router]);
 
-  const handleCheckCode = async (e: FormEvent<HTMLDivElement>) => {
+  const handleCheckCode = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -94,11 +95,6 @@ const ResetPasswordCode = () => {
               return value.replace(/\D/g, "")}
             }
             length={5}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && code.length === 5) {
-                handleCheckCode(e);
-              }
-            }}
           />
         </InputGroup>
 
