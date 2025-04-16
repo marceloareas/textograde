@@ -259,11 +259,22 @@ const Index = () => {
       ellipsis: true,
     },
     {
-      title: "Nota total",
-      dataIndex: "nota_total",
-      key: "nota_total",
+      title: "Nota Modelo",
+      dataIndex: "nota_modelo",
+      key: "nota_modelo",
       align: "center",
       ellipsis: true,
+      render: (_: any, record: Redacao) => {
+        const mediaModelo =
+          (record.nota_competencia_1_model +
+            record.nota_competencia_2_model +
+            record.nota_competencia_3_model +
+            record.nota_competencia_4_model +
+            record.nota_competencia_5_model) /
+          5;
+
+        return mediaModelo.toFixed(2); // Exibe com 2 casas decimais
+      },
     },
     {
       title: "Nota Professor",
@@ -271,6 +282,34 @@ const Index = () => {
       key: "nota_professor",
       align: "center",
       ellipsis: true,
+    },
+    {
+      title: "Nota Total",
+      dataIndex: "nota_total",
+      key: "nota_total",
+      align: "center",
+      ellipsis: true,
+      render: (_: any, record: Redacao) => {
+        const mediaModelo =
+          (record.nota_competencia_1_model +
+            record.nota_competencia_2_model +
+            record.nota_competencia_3_model +
+            record.nota_competencia_4_model +
+            record.nota_competencia_5_model) /
+          5;
+
+        const mediaProfessor =
+          (record.nota_competencia_1_professor +
+            record.nota_competencia_2_professor +
+            record.nota_competencia_3_professor +
+            record.nota_competencia_4_professor +
+            record.nota_competencia_5_professor) /
+          5;
+
+        const notaTotal = (mediaModelo + mediaProfessor) / 2;
+
+        return notaTotal.toFixed(2); // Exibe com 2 casas decimais
+      },
     },
   ];
 

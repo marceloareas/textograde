@@ -38,18 +38,18 @@ const ModalDetalhesRedacao: React.FC<RedacaoDetalhes> = ({
         notaComp4Editada !== null ||
         notaComp5Editada !== null;
 
-      if (redacao?.nota_professor && gradesEdited) {
-        message.error("Redação já foi corrigida!");
-        return;
-      }
-
+        if (redacao?.nota_professor && gradesEdited) {
+          message.error("Redação já foi corrigida!");
+          return;
+        }
+        
       if (redacao && gradesEdited && tipoUsuario === "professor") {
         const { data } = await client.put(`/redacao/${redacao._id}`, {
-          nota_competencia_1_model: notaComp1Editada ?? 0,
-          nota_competencia_2_model: notaComp2Editada ?? 0,
-          nota_competencia_3_model: notaComp3Editada ?? 0,
-          nota_competencia_4_model: notaComp4Editada ?? 0,
-          nota_competencia_5_model: notaComp5Editada ?? 0,
+          nota_competencia_1_professor: notaComp1Editada ?? redacao.nota_competencia_1_professor,
+          nota_competencia_2_professor: notaComp2Editada ?? redacao.nota_competencia_2_professor,
+          nota_competencia_3_professor: notaComp3Editada ?? redacao.nota_competencia_3_professor,
+          nota_competencia_4_professor: notaComp4Editada ?? redacao.nota_competencia_4_professor,
+          nota_competencia_5_professor: notaComp5Editada ?? redacao.nota_competencia_5_professor,
         });
 
         if (data) {
@@ -99,13 +99,11 @@ const ModalDetalhesRedacao: React.FC<RedacaoDetalhes> = ({
               {[1, 2, 3, 4, 5].map((num) => (
                 <div key={num}>
                   <label style={labelStyle}>
-                    <b>Nota Competência {num}:</b>
+                    <b>Nota Competência {num} (Modelo):</b>
                   </label>
                   <Input
                     style={inputStyle}
-                    value={
-                      (redacao as any)[`nota_competencia_${num}_model`] ?? 0
-                    }
+                    value={(redacao as any)[`nota_competencia_${num}_model`] ?? 0}
                     disabled
                   />
                 </div>
@@ -115,7 +113,7 @@ const ModalDetalhesRedacao: React.FC<RedacaoDetalhes> = ({
               {[1, 2, 3, 4, 5].map((num) => (
                 <div key={num}>
                   <label style={labelStyle}>
-                    <b>Nota Competência {num}:</b>
+                    <b>Nota Competência {num} (Professor):</b>
                   </label>
                   <Input
                     style={inputStyle}
@@ -151,11 +149,25 @@ const ModalDetalhesRedacao: React.FC<RedacaoDetalhes> = ({
             />
 
             <Collapse style={labelStyle}>
-              <Panel header="Notas competências" key="1">
+              <Panel header="Notas competências - Modelo" key="1">
                 {[1, 2, 3, 4, 5].map((num) => (
                   <div key={num}>
                     <label style={labelStyle}>
-                      <b>Nota Competência {num}:</b>
+                      <b>Nota Competência {num} (Modelo):</b>
+                    </label>
+                    <Input
+                      style={inputStyle}
+                      value={(redacao as any)[`nota_competencia_${num}_model`] ?? 0}
+                      disabled
+                    />
+                  </div>
+                ))}
+              </Panel>
+              <Panel header="Notas competências - Professor" key="2">
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <div key={num}>
+                    <label style={labelStyle}>
+                      <b>Nota Competência {num} (Professor):</b>
                     </label>
                     <Input
                       style={inputStyle}

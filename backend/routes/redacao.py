@@ -180,6 +180,51 @@ def update_redacao(id):
                 # Atualiza a nota do professor com a soma das competências
                 update_data["nota_professor"] = soma_competencias
 
+                competencias_professor = [
+                    "nota_competencia_1_professor",
+                    "nota_competencia_2_professor",
+                    "nota_competencia_3_professor",
+                    "nota_competencia_4_professor",
+                    "nota_competencia_5_professor"
+                ]
+
+                # Adiciona as notas do professor
+                for competencia in competencias_professor:
+                    if competencia in data:
+                        update_data[competencia] = data[competencia]
+
+                
+                soma_competencias_professor = sum(
+                    [data.get(competencia, redacao.get(competencia, 0)) for competencia in competencias_professor]
+                )
+
+                # Atualiza a nota do professor
+                update_data["nota_professor"] = soma_competencias_professor
+
+                # Cálculo da média das notas do modelo
+                media_modelo = sum([
+                    data.get("nota_competencia_1_model", 0),
+                    data.get("nota_competencia_2_model", 0),
+                    data.get("nota_competencia_3_model", 0),
+                    data.get("nota_competencia_4_model", 0),
+                    data.get("nota_competencia_5_model", 0)
+                ]) / 5
+
+                # Cálculo da média das notas do professor (se disponíveis)
+                media_professor = sum([
+                    data.get("nota_competencia_1_professor", 0),
+                    data.get("nota_competencia_2_professor", 0),
+                    data.get("nota_competencia_3_professor", 0),
+                    data.get("nota_competencia_4_professor", 0),
+                    data.get("nota_competencia_5_professor", 0)
+                ]) / 5
+
+                # Cálculo da nota total como a média entre as duas médias
+                nota_total = (media_modelo + media_professor) / 2
+
+                # Atualiza o campo nota_total
+                update_data["nota_total"] = nota_total
+
         # Permite que alunos alterem apenas o título da redação
         if "titulo" in data:
             update_data["titulo"] = data["titulo"]
@@ -297,8 +342,12 @@ def avaliar_redacao_texto():
             "nota_competencia_3_model": grades['nota3'],
             "nota_competencia_4_model": grades['nota4'],
             "nota_competencia_5_model": grades['nota5'],
+            "nota_competencia_1_professor": None,
+            "nota_competencia_2_professor": None,
+            "nota_competencia_3_professor": None,
+            "nota_competencia_4_professor": None,
+            "nota_competencia_5_professor": None,
             "nota_total": sum(grades.values()),
-            "nota_professor": "",
             "id_tema": id_tema,
             "aluno": aluno
         }
