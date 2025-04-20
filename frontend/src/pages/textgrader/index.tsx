@@ -270,8 +270,7 @@ const Index = () => {
             record.nota_competencia_2_model +
             record.nota_competencia_3_model +
             record.nota_competencia_4_model +
-            record.nota_competencia_5_model) /
-          5;
+            record.nota_competencia_5_model);
 
         return mediaModelo.toFixed(2); // Exibe com 2 casas decimais
       },
@@ -282,11 +281,21 @@ const Index = () => {
       key: "nota_professor",
       align: "center",
       ellipsis: true,
+      render: (_: any, record: Redacao) => {
+        const mediaProfessor =
+          (record.nota_competencia_1_professor +
+            record.nota_competencia_2_professor +
+            record.nota_competencia_3_professor +
+            record.nota_competencia_4_professor +
+            record.nota_competencia_5_professor);
+
+        return mediaProfessor.toFixed(2); // Exibe com 2 casas decimais
+      },
     },
     {
-      title: "Nota Total",
-      dataIndex: "nota_total",
-      key: "nota_total",
+      title: "Média",
+      dataIndex: "media",
+      key: "media",
       align: "center",
       ellipsis: true,
       render: (_: any, record: Redacao) => {
@@ -295,16 +304,14 @@ const Index = () => {
             record.nota_competencia_2_model +
             record.nota_competencia_3_model +
             record.nota_competencia_4_model +
-            record.nota_competencia_5_model) /
-          5;
+            record.nota_competencia_5_model);
 
         const mediaProfessor =
           (record.nota_competencia_1_professor +
             record.nota_competencia_2_professor +
             record.nota_competencia_3_professor +
             record.nota_competencia_4_professor +
-            record.nota_competencia_5_professor) /
-          5;
+            record.nota_competencia_5_professor);
 
         const notaTotal = (mediaModelo + mediaProfessor) / 2;
 
