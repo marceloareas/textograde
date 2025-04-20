@@ -33,11 +33,11 @@ def validate_tema(id_tema):
 def evaluate_redacao(texto):
     # Simulando notas para teste
     return {
-        "nota_1": 800,
-        "nota_2": 800,
-        "nota_3": 800,
-        "nota_4": 800,
-        "nota_5": 800
+        "nota_1": 40,
+        "nota_2": 80,
+        "nota_3": 120,
+        "nota_4": 160,
+        "nota_5": 200
     }
 
 # Função para verificar se a redação pertence ao aluno autenticado
