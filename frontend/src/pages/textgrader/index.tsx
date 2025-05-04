@@ -6,8 +6,8 @@ import { useAuth } from "../../context";
 import CustomTable from "../../components/customTable";
 import ModalDetalhesTema from "@/components/modalDetalhesTema";
 import ModalDetalhesRedacao from "@/components/modalDetalhesRedacao";
-import { API_URL } from "@/config/config";
 import { client } from "../../services/client";
+import { SearchInput } from "@/components/searchInput";
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -41,145 +41,29 @@ export interface Redacao {
 }
 
 const Index = () => {
-  const [activeKey, setActiveKey] = useState<string>("1");
-  const [temasData, setTemasData] = useState<Tema[]>([]);
-  const [redacoesData, setRedacoesData] = useState<Redacao[]>([]);
-  const [alunos, setAlunos] = useState<any[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [redacaoModalVisible, setRedacaoModalVisible] = useState(false);
-  const [selectedTema, setSelectedTema] = useState<Tema | null>(null);
-  const [selectedRedacao, setSelectedRedacao] = useState<Redacao | null>(null);
-  const [filter, setFilter] = useState<string>("todos");
-  const [filterAluno, setFilterAluno] = useState<string>("todos");
   const { isLoggedIn, tipoUsuario, nomeUsuario } = useAuth();
 
-  const handleTabChange = (key: string) => {
-    setActiveKey(key);
-  };
+  const [students, setStudents] = useState<any[]>([]);
 
-  const openModal = (tema: any) => {
-    setSelectedTema(tema);
-    setModalVisible(true);
-  };
+  const [topicsData, setTopicsData] = useState<Tema[]>([]);
+  const [essaysData, setEssaysData] = useState<Redacao[]>([]);
 
-  const openRedacaoModal = (redacao: any) => {
-    setSelectedRedacao(redacao);
-    setRedacaoModalVisible(true);
-  };
+  const [filteredTopicsData, setFilteredTopicsData] = useState<Tema[]>([]);
+  const [filteredEssaysData, setFilteredEssaysData] = useState<Redacao[]>([]);
+  
+  const [activeKey, setActiveKey] = useState<string>("1");
 
-  useEffect(() => {
-    const fetchTemas = async () => {
-      try {
-        const { data } = await client.get("/tema");
-        
-        if (Array.isArray(data)) {
-          setTemasData(data);
-        } else {
-          console.error("Dados inválidos recebidos para temas:", data);
-          setTemasData([]);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar os temas:", error);
-        setTemasData([]);
-      }
-    };
+  const [topicModalVisible, setModalVisible] = useState(false);
+  const [essayModalVisible, setEssayModalVisible] = useState(false);
 
-    const fetchAlunos = async () => {
-      try {
-        const { data } = await client.get(`/alunos`);
+  const [selectedTopic, setSelectedTopic] = useState<Tema | null>(null);
+  const [selectedEssay, setSelectedEssay] = useState<Redacao | null>(null);
 
-        if (Array.isArray(data)) {
-          setAlunos(data);
-        } else {
-          console.error("Dados inválidos recebidos para alunos:", data);
-          setAlunos([]);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar alunos:", error);
-        setAlunos([]);
-      }
-    };
-    
-    fetchTemas();
-    fetchAlunos();
-  }, []);
+  const [filterTopicsType, setFilterTopicsType] = useState<string>("todos");
+  const [filterStudentType, setFilterStudentType] = useState<string>("todos");
 
-  useEffect(() => {
-    const fetchRedacoes = async () => {
-      try {
-        const { data } = await client.get(`/redacao${tipoUsuario === "aluno" ? `?user=${nomeUsuario}` : ""}`);
-        
-        if (Array.isArray(data)) {
-          setRedacoesData(data);
-        } else {
-          console.error("Dados inválidos recebidos para redações:", data);
-          setRedacoesData([]);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar as redações:", error);
-        setRedacoesData([]);
-      }
-    };
-
-    fetchRedacoes();
-  }, [tipoUsuario, nomeUsuario]);
-
-  const handleDeleteTema = async (id: string) => {
-    try {
-      const { data } = await client.delete(`/tema/${id}`);
-
-      if (data) {
-        setTemasData(temasData.filter((tema) => tema._id !== id));
-        message.success("Tema deletado com sucesso!");
-      }
-    } catch (error) {
-      console.error("Erro ao deletar o tema:", error);
-      message.error("Erro ao deletar o tema. Por favor, tente novamente.");
-    }
-  };
-
-  const handleTemaEditado = (temaEditado: Tema) => {
-    setTemasData(
-      temasData.map((tema) =>
-        tema._id === temaEditado._id ? temaEditado : tema
-      )
-    );
-  };
-
-  const handleRedacaoEditado = (redacaoEditado: Redacao) => {
-    setRedacoesData(
-      redacoesData.map((redacao) =>
-        redacao._id === redacaoEditado._id ? redacaoEditado : redacao
-      )
-    );
-  };
-
-  const getTemaNome = (id_tema: string): string => {
-    const tema = temasData.find((tema) => tema._id === id_tema);
-    return tema ? tema.tema : "Tema não encontrado";
-  };
-
-  const handleFilterTemas = () => {
-    return temasData.filter((tema) => tema.nome_professor === nomeUsuario);
-  };
-
-  const handleFilterRedacoes = () => {
-    if (filter === "meus") {
-      return redacoesData.filter((redacao) => {
-        return temasData.find(
-          (tema) =>
-            tema._id === redacao.id_tema && tema.nome_professor === nomeUsuario
-        );
-      });
-    }
-
-    if (filterAluno !== "todos") {
-      return redacoesData.filter((redacao) => {
-        redacao.aluno === filterAluno;
-      });
-    }
-    return redacoesData;
-  };
+  const [topicSearchValue, setTopicSearchValue] = useState("");
+  const [essaySearchValue, setEssaySearchValue] = useState("");
 
   const temasColumns = [
     {
@@ -216,7 +100,7 @@ const Index = () => {
         tipoUsuario === "professor" && record.nome_professor === nomeUsuario ? (
           <Tooltip title="Deletar tema">
             <Button
-              onClick={() => handleDeleteTema(record._id)}
+              onClick={() => handleDeleteTopic(record._id)}
               danger
               icon={<DeleteOutlined />}
             />
@@ -243,7 +127,7 @@ const Index = () => {
             tipoUsuario === "aluno" ? "Visualizar redação" : "Corrigir redação"
           }
         >
-          <Button type="link" onClick={() => openRedacaoModal(record)}>
+          <Button type="link" onClick={() => openEssayModal(record)}>
             {text}
           </Button>
         </Tooltip>
@@ -255,7 +139,7 @@ const Index = () => {
       title: "Tema",
       dataIndex: "id_tema",
       key: "id_tema",
-      render: (id_tema: string) => getTemaNome(id_tema),
+      render: (id_tema: string) => getTopicName(id_tema),
       ellipsis: true,
     },
     {
@@ -320,6 +204,167 @@ const Index = () => {
     },
   ];
 
+  useEffect(() => {
+    const fetchTemas = async () => {
+      try {
+        const { data } = await client.get("/tema");
+        
+        if (Array.isArray(data)) {
+          setTopicsData(data);
+        } else {
+          console.error("Dados inválidos recebidos para temas:", data);
+          setTopicsData([]);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar os temas:", error);
+        setTopicsData([]);
+      }
+    };
+
+    const fetchAlunos = async () => {
+      try {
+        const { data } = await client.get(`/alunos`);
+
+        if (Array.isArray(data)) {
+          setStudents(data);
+        } else {
+          console.error("Dados inválidos recebidos para alunos:", data);
+          setStudents([]);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar alunos:", error);
+        setStudents([]);
+      }
+    };
+    
+    fetchTemas();
+    fetchAlunos();
+
+    return () => {
+      setTopicSearchValue("");
+      setEssaySearchValue("");
+      setFilterTopicsType("todos");
+      setFilterStudentType("todos");
+      setActiveKey("1");
+      setModalVisible(false);
+      setEssayModalVisible(false);
+      setSelectedTopic(null);
+      setSelectedEssay(null);
+      setTopicsData([]);
+      setFilteredTopicsData([]);
+      setEssaysData([]);
+      setStudents([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchRedacoes = async () => {
+      try {
+        const { data } = await client.get(`/redacao${tipoUsuario === "aluno" ? `?user=${nomeUsuario}` : ""}`);
+        
+        if (Array.isArray(data)) {
+          setEssaysData(data);
+        } else {
+          console.error("Dados inválidos recebidos para redações:", data);
+          setEssaysData([]);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar as redações:", error);
+        setEssaysData([]);
+      }
+    };
+
+    fetchRedacoes();
+  }, [tipoUsuario, nomeUsuario]);
+
+  useEffect(() => {
+    if (filterTopicsType === "todos") {
+      setFilteredTopicsData(topicsData);
+    } else if (filterTopicsType === "meus") {
+      setFilteredTopicsData(
+        topicsData.filter((tema) => tema.nome_professor === nomeUsuario)
+      );
+    }
+  }, [filterTopicsType, topicsData])
+
+  useEffect(() => {    
+    const newTopics = topicsData.filter(
+      (topic) =>
+        topic.tema.toLowerCase().includes(topicSearchValue.toLowerCase()) ||
+        topic.nome_professor.toLowerCase().includes(topicSearchValue.toLowerCase())
+      )
+
+    setFilteredTopicsData(newTopics);
+  }, [topicSearchValue]);
+  
+
+  const handleTabChange = (key: string) => {
+    setActiveKey(key);
+  };
+
+  const openModal = (tema: any) => {
+    setSelectedTopic(tema);
+    setModalVisible(true);
+  };
+
+  const openEssayModal = (essay: any) => {
+    setSelectedEssay(essay);
+    setEssayModalVisible(true);
+  };
+
+  const handleDeleteTopic = async (id: string) => {
+    try {
+      const { data } = await client.delete(`/tema/${id}`);
+
+      if (data) {
+        setTopicsData(topicsData.filter((tema) => tema._id !== id));
+        message.success("Tema deletado com sucesso!");
+      }
+    } catch (error) {
+      console.error("Erro ao deletar o tema:", error);
+      message.error("Erro ao deletar o tema. Por favor, tente novamente.");
+    }
+  };
+
+  const handleUpdateTopic = (updatedTopic: Tema) => {
+    setTopicsData(
+      topicsData.map((tema) =>
+        tema._id === updatedTopic._id ? updatedTopic : tema
+      )
+    );
+  };
+
+  const handleUpdateEssay = (updatedEssay: Redacao) => {
+    setEssaysData(
+      essaysData.map((redacao) =>
+        redacao._id === updatedEssay._id ? updatedEssay : redacao
+      )
+    );
+  };
+
+  const getTopicName = (id_tema: string): string => {
+    const tema = topicsData.find((tema) => tema._id === id_tema);
+    return tema ? tema.tema : "Tema não encontrado";
+  };
+
+  const handleFilterEssays = () => {
+    if (filterTopicsType === "meus") {
+      return essaysData.filter((redacao) => {
+        return topicsData.find(
+          (tema) =>
+            tema._id === redacao.id_tema && tema.nome_professor === nomeUsuario
+        );
+      });
+    }
+
+    if (filterStudentType !== "todos") {
+      return essaysData.filter((redacao) => {
+        redacao.aluno === filterStudentType;
+      });
+    }
+    return essaysData;
+  };
+
   return (
     <div style={{ padding: "0 20px 0 20px", width: "100vw" }}>
       <Tabs
@@ -328,43 +373,56 @@ const Index = () => {
         style={{ flex: 1 }}
       >
         <TabPane tab="Temas" key="1">
-          <Space style={{ marginBottom: 16 }}>
-            {tipoUsuario === "professor" && (
-              <Link href="/textgrader/tema">
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  style={{ marginRight: 8 }}
+          <Space
+            style={{ 
+              marginBottom: 16,
+              justifyContent: "space-between",
+              width: "100%"
+            }}
+          >
+            <div>
+              {tipoUsuario === "professor" && (
+                <Link href="/textgrader/tema">
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    style={{ marginRight: 8 }}
+                  >
+                    Adicionar Tema
+                  </Button>
+                </Link>
+              )}
+
+              {tipoUsuario === "professor" && (
+                <Select
+                  defaultValue="todos"
+                  style={{ width: 140 }}
+                  onChange={(value) => setFilterTopicsType(value)}
                 >
-                  Adicionar Tema
-                </Button>
-              </Link>
-            )}
-            {tipoUsuario === "professor" && (
-              <Select
-                defaultValue="todos"
-                style={{ width: 140 }}
-                onChange={(value) => setFilter(value)}
-              >
-                <Option value="todos">Todos os Temas</Option>
-                <Option value="meus">Meus Temas</Option>
-              </Select>
-            )}
+                  <Option value="todos">Todos os Temas</Option>
+                  <Option value="meus">Meus Temas</Option>
+                </Select>
+              )}
+            </div>
+
+            <SearchInput onChange={setTopicSearchValue} placeholder="Digite um tema ou nome" />
           </Space>
+
           {isLoggedIn && (
             <CustomTable
-              dataSource={filter === "meus" ? handleFilterTemas() : temasData}
+              dataSource={filteredTopicsData}
               columns={temasColumns}
             />
           )}
         </TabPane>
+
         <TabPane tab="Redações" key="2">
           <Space style={{ marginBottom: 16 }}>
             {tipoUsuario === "professor" && (
               <Select
                 defaultValue="todos"
                 style={{ width: 200 }}
-                onChange={(value) => setFilter(value)}
+                onChange={(value) => setFilterTopicsType(value)}
               >
                 <Option value="todos">Todas as Redações</Option>
                 <Option value="meus">Redações dos meus temas</Option>
@@ -374,13 +432,13 @@ const Index = () => {
               <Select
                 defaultValue="todos"
                 style={{ width: 200 }}
-                onChange={(value) => setFilterAluno(value)}
+                onChange={(value) => setFilterStudentType(value)}
               >
                 <Option value="todos">Todos os Alunos</Option>
-                {Array.isArray(alunos) &&
-                  alunos.map((aluno) => (
-                    <Option key={aluno._id} value={aluno.username}>
-                      {aluno.username}
+                {Array.isArray(students) &&
+                  students.map((student) => (
+                    <Option key={student._id} value={student.username}>
+                      {student.username}
                     </Option>
                   ))}
               </Select>
@@ -388,7 +446,7 @@ const Index = () => {
           </Space>
           {isLoggedIn && (
             <CustomTable
-              dataSource={handleFilterRedacoes()}
+              dataSource={handleFilterEssays()}
               columns={redacaoColumns}
             />
           )}
@@ -396,17 +454,17 @@ const Index = () => {
       </Tabs>
 
       <ModalDetalhesTema
-        open={modalVisible}
+        open={topicModalVisible}
         onCancel={() => setModalVisible(false)}
-        tema={selectedTema}
-        onTemaEditado={handleTemaEditado}
+        tema={selectedTopic}
+        onTemaEditado={handleUpdateTopic}
       />
 
       <ModalDetalhesRedacao
-        open={redacaoModalVisible}
-        onCancel={() => setRedacaoModalVisible(false)}
-        redacao={selectedRedacao}
-        onRedacaoEditado={handleRedacaoEditado}
+        open={essayModalVisible}
+        onCancel={() => setEssayModalVisible(false)}
+        redacao={selectedEssay}
+        onRedacaoEditado={handleUpdateEssay}
       />
     </div>
   );
