@@ -5,8 +5,6 @@ import { useAuth } from "../context";
 import styled from "styled-components";
 import { client } from "@/services/client";
 
-const { Content } = Layout;
-
 const Container = styled(Layout)`
   height: calc(100vh - 46px - 64px);  
   display: flex;

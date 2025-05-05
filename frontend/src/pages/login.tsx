@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Button, Input, Layout, message, Typography } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -14,7 +14,7 @@ const Container = styled(Layout)`
   align-items: center;
 `;
 
-const FormContainer = styled(Content)`
+const FormContainer = styled.form`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -23,7 +23,7 @@ const FormContainer = styled(Content)`
   border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
   width: 350px;
-  max-height: 400px;
+  height: 400px;
   position: relative;
   gap: 20px;
 `;
@@ -64,7 +64,9 @@ const Login = () => {
     }
   }, [isLoggedIn, router]);
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     if (!email || !password) {
       message.warning("Por favor, preencha todos os campos.");
       return;
@@ -82,7 +84,7 @@ const Login = () => {
   return (
     <Container>
       <title>Login</title>
-      <FormContainer>
+      <FormContainer onSubmit={handleLogin}>
         <Title>Login</Title>
 
         <InputGroup>
@@ -110,7 +112,7 @@ const Login = () => {
           </div>
 
           <div style={{ display: "flex", minWidth: "130px", justifyContent: "space-between" }}>
-            <Button block type="primary" onClick={handleLogin}>
+            <Button block type="primary" htmlType="submit">
               Entrar
             </Button>
           </div>

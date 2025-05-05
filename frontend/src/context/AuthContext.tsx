@@ -51,8 +51,7 @@ export const getAccessToken = async (): Promise<string | null> => {
 
 // Função utilitária para lidar com o token no localStorage
 const getAuthToken = async () => await getAccessToken();
-const setAuthToken = (token: string) =>
-  localStorage.setItem("accessToken", token);
+const setAuthToken = (token: string) => localStorage.setItem("accessToken", token);
 const removeAuthToken = () => localStorage.removeItem("accessToken");
 
 // Provedor do contexto de autenticação
@@ -111,23 +110,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const fetchToken = async () => {
       const tokenFromStorage = await getAuthToken();
 
-      if (tokenFromStorage && isLoggedIn) {
+      if (tokenFromStorage) {
         setToken(tokenFromStorage);
-  
-        axios
-          .get<ProfileResponse>(`${API_URL}/profile`, {
+        
+        try {
+          const profile = await axios.get(`${API_URL}/profile`, {
             headers: { Authorization: `Bearer ${tokenFromStorage}` },
-          })
-          .then((response) => {
-            if (isMounted.current) {
-              setIsLoggedIn(true);
-              setNomeUsuario(response.data.nomeUsuario);
-              setTipoUsuario(response.data.tipoUsuario);
-            }
-          })
-          .catch(() => {
-            if (isMounted.current) logout();
           });
+
+          setIsLoggedIn(true);
+          setNomeUsuario(profile.data.nomeUsuario);
+          setTipoUsuario(profile.data.tipoUsuario);
+        } catch (error) {
+          if (isMounted.current) logout();
+        }
       }
     };
 
