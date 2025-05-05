@@ -34,7 +34,7 @@ export const SearchInput = ({ onChange, initialValue = "", placeholder = "" }: I
                 value={value}
                 allowClear
                 onChange={handleChange}
-                style={{ width: 250 }}
+                style={{ width: 275 }}
                 />
         </Root>
     );

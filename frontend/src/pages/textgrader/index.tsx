@@ -43,8 +43,6 @@ export interface Redacao {
 const Index = () => {
   const { isLoggedIn, tipoUsuario, nomeUsuario } = useAuth();
 
-  const [students, setStudents] = useState<any[]>([]);
-
   const [topicsData, setTopicsData] = useState<Tema[]>([]);
   const [essaysData, setEssaysData] = useState<Redacao[]>([]);
 
@@ -59,8 +57,8 @@ const Index = () => {
   const [selectedTopic, setSelectedTopic] = useState<Tema | null>(null);
   const [selectedEssay, setSelectedEssay] = useState<Redacao | null>(null);
 
+  const [filterEssayTopicsType, setFilterEssayTopicsType] = useState<string>("todos");
   const [filterTopicsType, setFilterTopicsType] = useState<string>("todos");
-  const [filterStudentType, setFilterStudentType] = useState<string>("todos");
 
   const [topicSearchValue, setTopicSearchValue] = useState("");
   const [essaySearchValue, setEssaySearchValue] = useState("");
@@ -220,31 +218,13 @@ const Index = () => {
         setTopicsData([]);
       }
     };
-
-    const fetchAlunos = async () => {
-      try {
-        const { data } = await client.get(`/alunos`);
-
-        if (Array.isArray(data)) {
-          setStudents(data);
-        } else {
-          console.error("Dados inválidos recebidos para alunos:", data);
-          setStudents([]);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar alunos:", error);
-        setStudents([]);
-      }
-    };
     
     fetchTemas();
-    fetchAlunos();
 
     return () => {
       setTopicSearchValue("");
       setEssaySearchValue("");
       setFilterTopicsType("todos");
-      setFilterStudentType("todos");
       setActiveKey("1");
       setModalVisible(false);
       setEssayModalVisible(false);
@@ -253,7 +233,6 @@ const Index = () => {
       setTopicsData([]);
       setFilteredTopicsData([]);
       setEssaysData([]);
-      setStudents([]);
     }
   }, []);
 
@@ -285,7 +264,22 @@ const Index = () => {
         topicsData.filter((tema) => tema.nome_professor === nomeUsuario)
       );
     }
-  }, [filterTopicsType, topicsData])
+  }, [filterTopicsType, topicsData]);
+  
+  useEffect(() => {
+    if (filterEssayTopicsType === "todos") {
+      setFilteredEssaysData(essaysData);
+    } else if (filterEssayTopicsType === "meus") {
+      const filteredEssays = essaysData.filter((redacao) => {
+        return topicsData.find(
+          (tema) =>
+            tema._id === redacao.id_tema && tema.nome_professor === nomeUsuario
+        );
+      });
+
+      setFilteredEssaysData(filteredEssays);
+    }
+  }, [filterEssayTopicsType, essaysData]);
 
   useEffect(() => {    
     const newTopics = topicsData.filter(
@@ -297,6 +291,16 @@ const Index = () => {
     setFilteredTopicsData(newTopics);
   }, [topicSearchValue]);
   
+  useEffect(() => {
+    const newEssays = essaysData.filter(
+      (essay) =>
+        essay.titulo.toLowerCase().includes(essaySearchValue.toLowerCase()) ||
+        essay.aluno.toLowerCase().includes(essaySearchValue.toLowerCase()) ||
+        topicsData.find((tema) => tema._id === essay.id_tema)?.tema.toLowerCase().includes(essaySearchValue.toLowerCase())
+      );
+
+    setFilteredEssaysData(newEssays);
+  }, [essaySearchValue]);
 
   const handleTabChange = (key: string) => {
     setActiveKey(key);
@@ -345,24 +349,6 @@ const Index = () => {
   const getTopicName = (id_tema: string): string => {
     const tema = topicsData.find((tema) => tema._id === id_tema);
     return tema ? tema.tema : "Tema não encontrado";
-  };
-
-  const handleFilterEssays = () => {
-    if (filterTopicsType === "meus") {
-      return essaysData.filter((redacao) => {
-        return topicsData.find(
-          (tema) =>
-            tema._id === redacao.id_tema && tema.nome_professor === nomeUsuario
-        );
-      });
-    }
-
-    if (filterStudentType !== "todos") {
-      return essaysData.filter((redacao) => {
-        redacao.aluno === filterStudentType;
-      });
-    }
-    return essaysData;
   };
 
   return (
@@ -417,36 +403,32 @@ const Index = () => {
         </TabPane>
 
         <TabPane tab="Redações" key="2">
-          <Space style={{ marginBottom: 16 }}>
-            {tipoUsuario === "professor" && (
-              <Select
-                defaultValue="todos"
-                style={{ width: 200 }}
-                onChange={(value) => setFilterTopicsType(value)}
-              >
-                <Option value="todos">Todas as Redações</Option>
-                <Option value="meus">Redações dos meus temas</Option>
-              </Select>
-            )}
-            {tipoUsuario === "professor" && (
-              <Select
-                defaultValue="todos"
-                style={{ width: 200 }}
-                onChange={(value) => setFilterStudentType(value)}
-              >
-                <Option value="todos">Todos os Alunos</Option>
-                {Array.isArray(students) &&
-                  students.map((student) => (
-                    <Option key={student._id} value={student.username}>
-                      {student.username}
-                    </Option>
-                  ))}
-              </Select>
-            )}
+          <Space
+            style={{ 
+              marginBottom: 16,
+              justifyContent: "space-between",
+              width: "100%"
+            }}
+          >
+            <div>
+              {tipoUsuario === "professor" && (
+                <Select
+                  defaultValue="todos"
+                  style={{ width: 200 }}
+                  onChange={(value) => setFilterEssayTopicsType(value)}
+                >
+                  <Option value="todos">Todas as Redações</Option>
+                  <Option value="meus">Redações dos meus temas</Option>
+                </Select>
+              )}
+            </div>
+
+            <SearchInput onChange={setEssaySearchValue} placeholder="Digite um título, aluno ou tema" />
           </Space>
+
           {isLoggedIn && (
             <CustomTable
-              dataSource={handleFilterEssays()}
+              dataSource={filteredEssaysData}
               columns={redacaoColumns}
             />
           )}
