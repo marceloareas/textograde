@@ -46,6 +46,10 @@ const Index = () => {
   const [topicsData, setTopicsData] = useState<Tema[]>([]);
   const [essaysData, setEssaysData] = useState<Redacao[]>([]);
 
+  const [categorizedEssaysData, setCategorizedEssaysData] = useState<Redacao[]>([]);
+  const [categorizedTopicsData, setCategorizedTopicsData] = useState<Tema[]>([]);
+  
+
   const [filteredTopicsData, setFilteredTopicsData] = useState<Tema[]>([]);
   const [filteredEssaysData, setFilteredEssaysData] = useState<Redacao[]>([]);
   
@@ -258,8 +262,13 @@ const Index = () => {
 
   useEffect(() => {
     if (filterTopicsType === "todos") {
+      setCategorizedTopicsData(topicsData);
       setFilteredTopicsData(topicsData);
     } else if (filterTopicsType === "meus") {
+      setCategorizedTopicsData(
+        topicsData.filter((tema) => tema.nome_professor === nomeUsuario)
+      );
+
       setFilteredTopicsData(
         topicsData.filter((tema) => tema.nome_professor === nomeUsuario)
       );
@@ -268,6 +277,7 @@ const Index = () => {
   
   useEffect(() => {
     if (filterEssayTopicsType === "todos") {
+      setCategorizedEssaysData(essaysData);
       setFilteredEssaysData(essaysData);
     } else if (filterEssayTopicsType === "meus") {
       const filteredEssays = essaysData.filter((redacao) => {
@@ -277,12 +287,13 @@ const Index = () => {
         );
       });
 
+      setCategorizedEssaysData(filteredEssays);
       setFilteredEssaysData(filteredEssays);
     }
   }, [filterEssayTopicsType, essaysData]);
 
   useEffect(() => {    
-    const newTopics = topicsData.filter(
+    const newTopics = categorizedTopicsData.filter(
       (topic) =>
         topic.tema.toLowerCase().includes(topicSearchValue.toLowerCase()) ||
         topic.nome_professor.toLowerCase().includes(topicSearchValue.toLowerCase())
@@ -292,7 +303,7 @@ const Index = () => {
   }, [topicSearchValue]);
   
   useEffect(() => {
-    const newEssays = essaysData.filter(
+    const newEssays = categorizedEssaysData.filter(
       (essay) =>
         essay.titulo.toLowerCase().includes(essaySearchValue.toLowerCase()) ||
         essay.aluno.toLowerCase().includes(essaySearchValue.toLowerCase()) ||
