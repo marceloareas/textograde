@@ -166,7 +166,7 @@ def update_redacao(id):
             else:
                 # Se for admin ou professor, pode alterar as notas
                 for key in ["nota", "nota_competencia_1_model", "nota_competencia_2_model", "nota_competencia_3_model", 
-                            "nota_competencia_4_model", "nota_competencia_5_model", "nota_professor"]:
+                            "nota_competencia_4_model", "nota_competencia_5_model"]:
                     if key in data:
                         update_data[key] = data[key]
 
@@ -179,13 +179,6 @@ def update_redacao(id):
                     "nota_competencia_5_model"
                 ]
                 
-                # Calcula a soma das notas das competências
-                soma_competencias = sum(
-                    [data.get(competencia, redacao.get(competencia, 0)) for competencia in competencias]
-                )
-
-                # Atualiza a nota do professor com a soma das competências
-                update_data["nota_professor"] = soma_competencias
 
                 competencias_professor = [
                     "nota_competencia_1_professor",
@@ -199,14 +192,6 @@ def update_redacao(id):
                 for competencia in competencias_professor:
                     if competencia in data:
                         update_data[competencia] = data[competencia]
-
-                
-                soma_competencias_professor = sum(
-                    [data.get(competencia, redacao.get(competencia, 0)) for competencia in competencias_professor]
-                )
-
-                # Atualiza a nota do professor
-                update_data["nota_professor"] = soma_competencias_professor
 
                 # Cálculo da média das notas do modelo
                 media_modelo = sum([
@@ -226,11 +211,7 @@ def update_redacao(id):
                     data.get("nota_competencia_5_professor", 0)
                 ]) / 5
 
-                # Cálculo da nota total como a média entre as duas médias
-                nota_total = (media_modelo + media_professor) / 2
-
-                # Atualiza o campo nota_total
-                update_data["nota_total"] = nota_total
+        
 
         # Permite que alunos alterem apenas o título da redação
         if "titulo" in data:
@@ -354,7 +335,6 @@ def avaliar_redacao_texto():
             "nota_competencia_3_professor": None,
             "nota_competencia_4_professor": None,
             "nota_competencia_5_professor": None,
-            "nota_total": sum(grades.values()),
             "id_tema": id_tema,
             "aluno": aluno
         }
