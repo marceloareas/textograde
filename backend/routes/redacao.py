@@ -55,12 +55,19 @@ def get_redacoes():
     Retorna todas as redações, com a opção de filtrar por aluno.
     """
     redacoes_collection = db.redacoes
-    username = request.args.get("username")
 
-    if username is not None:
-        redacoes = list(redacoes_collection.find({"aluno": username}))
+    # Obtém o usuário autenticado do token JWT
+    current_user_email = get_jwt_identity()
+    current_user = db.users.find_one({"email": current_user_email})
+
+    if current_user["tipoUsuario"] == "aluno":
+        redacoes = list(redacoes_collection.find({"aluno": current_user["username"]}))
     else:
-        redacoes = list(redacoes_collection.find())
+        username = request.args.get("username")
+        if username is not None:
+            redacoes = list(redacoes_collection.find({"aluno": username}))
+        else:
+            redacoes = list(redacoes_collection.find())
 
     for redacao in redacoes:
         redacao['_id'] = str(redacao['_id'])
