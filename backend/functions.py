@@ -14,15 +14,15 @@ import requests
 load_dotenv()
 
 #Configure sua chave de API da AZURE
-try:
-    load_dotenv()
-    subscription_key = os.getenv('SUBSCRIPTION_KEY')
-    endpoint = os.getenv('ENDPOINT')
-    computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
-except:
-    subscription_key = os.environ('SUBSCRIPTION_KEY'),
-    endpoint = os.environ('ENDPOINT')
-    computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
+# try:
+#     load_dotenv()
+#     subscription_key = os.getenv('SUBSCRIPTION_KEY')
+#     endpoint = os.getenv('ENDPOINT')
+#     computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
+# except:
+#     subscription_key = os.environ('SUBSCRIPTION_KEY'),
+#     endpoint = os.environ('ENDPOINT')
+#     computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
 
 def use_vectorizer(df_train):
     vectorizer_vez = pickle.load(open('vectorizer.pkl','rb'))
