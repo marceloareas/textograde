@@ -83,14 +83,13 @@ const ModalDetalhesTema: React.FC<TemaDetalhes> = ({
 						topic.nome_professor !== nomeUsuario
 				) ? onCancel : handleEditTopic
 			}
-			cancelButtonProps={{ hidden: 
-				(
+			cancelButtonProps={{
+				hidden: (
 					tipoUsuario === "aluno" ||
 						tipoUsuario === "professor" &&
 						topic.nome_professor !== nomeUsuario
 				)
 			}}
-
 		>
 				<>
 					{
