@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import withSession from "../../hoc/withSession";
 
 const Container = styled.div`
   max-width: 800px;
@@ -161,4 +162,4 @@ const Competencias = () => {
   );
 };
 
-export default Competencias;
+export default withSession(Competencias);

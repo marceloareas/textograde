@@ -11,6 +11,7 @@ import TextArea from "antd/lib/input/TextArea";
 import { S } from "@/styles/Redacao.styles";
 import { useAuth } from "../../context";
 import { API_URL } from "@/config/config";
+import withSession from "../../hoc/withSession";
 
 const Redacao = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -165,4 +166,4 @@ const Redacao = () => {
   );
 };
 
-export default Redacao;
+export default withSession(Redacao);

@@ -6,6 +6,7 @@ import styled from "styled-components";
 import { API_URL } from "@/config/config";
 import axios from "axios";
 import { client } from "../../services/client";
+import withSession from "../../hoc/withSession";
 
 const Container = styled.div`
   display: flex;
@@ -116,4 +117,4 @@ const Tema = () => {
   );
 };
 
-export default Tema;
+export default withSession(Tema);
