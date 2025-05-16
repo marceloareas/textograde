@@ -9,14 +9,14 @@ interface TemaDetalhes {
 	open: boolean;
 	onCancel: () => void;
 	topic: Topic;
-	onTopicChanged: (newTopic: Topic) => void;
+	onTopicUpdated: (newTopic: Topic) => void;
 };
 
 const ModalDetalhesTema: React.FC<TemaDetalhes> = ({
 	open,
 	onCancel,
 	topic,
-	onTopicChanged,
+	onTopicUpdated,
 }) => {
 	const [newDescription, setNewDescription] = useState<string>("");
 	const [newTopic, setNewTopic] = useState<string>("");
@@ -36,7 +36,7 @@ const ModalDetalhesTema: React.FC<TemaDetalhes> = ({
 					
 					onCancel();
 
-					onTopicChanged({
+					onTopicUpdated({
 						...topic,
 						tema: newTopic !== "" ? newTopic : topic.tema,
 						descricao:

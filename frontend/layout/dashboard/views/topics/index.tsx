@@ -162,7 +162,7 @@ export const TopicsView = ({
                     open={topicModalVisible}
                     topic={selectedTopic}
                     onCancel={handleCloseModal}
-                    onTopicChanged={handleUpdateTopic}
+                    onTopicUpdated={handleUpdateTopic}
                 />
             )}
         </>

@@ -1,10 +1,7 @@
-import { Tabs, Button, Tooltip, Select, Space } from "antd";
+import { Tabs } from "antd";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context";
-import CustomTable from "../../components/customTable";
-import ModalDetalhesRedacao from "@/components/modalDetalhesRedacao";
 import { client } from "../../services/client";
-import { SearchInput } from "@/components/searchInput";
 import { TopicsView } from "../../../layout/dashboard/views/topics";
 import { useRouter } from "next/router";
 import withSession from "../../hoc/withSession";
@@ -12,7 +9,6 @@ import { UrlQueryControl } from "@/utils/urlQueryControl";
 import { EssaysView } from "../../../layout/dashboard/views/essays";
 
 const { TabPane } = Tabs;
-const { Option } = Select;
 
 export interface Topic {
   _id: string;
@@ -30,7 +26,6 @@ export interface Essay {
   nota_competencia_3_model: number;
   nota_competencia_4_model: number;
   nota_competencia_5_model: number;
-  nota_professor: number;
   nota_competencia_1_professor: number;
   nota_competencia_2_professor: number;
   nota_competencia_3_professor: number;
@@ -204,17 +199,6 @@ const Index = () => {
 			setActiveKey("1");
 		} else if (tab === "redacoes") {
 			setActiveKey("2");
-		} else {
-			router.push(
-                UrlQueryControl("textgrader", router.query, [
-                    {
-                        key: "tab",
-                        value: "temas",
-                    },
-                ]),
-                undefined,
-                { shallow: true }
-            );
 		}
 	}, [tab]);
 	

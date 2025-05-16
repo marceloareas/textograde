@@ -36,12 +36,18 @@ export const EssaysView = ({
         setEssayModalVisible(true);
     };
 
+    const closeEssayModal = () => {
+        setEssayModalVisible(false);
+        setSelectedEssay(null);
+    };
+
     const handleUpdateEssay = (updatedEssay: Essay) => {
         setEssaysData(
             essaysData.map((redacao) =>
                 redacao._id === updatedEssay._id ? updatedEssay : redacao
             )
         );
+        closeEssayModal();
     };
 
     const getTopicName = (id_tema: string): string => {
@@ -170,12 +176,14 @@ export const EssaysView = ({
                 columns={redacaoColumns}
             />
 
-            <ModalDetalhesRedacao
-				open={essayModalVisible}
-				onCancel={() => setEssayModalVisible(false)}
-				redacao={selectedEssay}
-				onRedacaoEditado={handleUpdateEssay}
-			/>
+            {selectedEssay && (
+                <ModalDetalhesRedacao
+                    open={essayModalVisible}
+                    onCancel={closeEssayModal}
+                    essay={selectedEssay}
+                    onEssayUpdated={handleUpdateEssay}
+                />
+            )}
         </>
     );
 }
