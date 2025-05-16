@@ -197,7 +197,6 @@ const Index = () => {
 			setActiveKey("2");
 		}
 	}, [tab]);
-	
 
 	return (
 		<div style={{ padding: "0 20px 0 20px", width: "100vw" }}>

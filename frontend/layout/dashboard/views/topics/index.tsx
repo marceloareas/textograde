@@ -75,13 +75,15 @@ export const TopicsView = ({
             dataIndex: "tema",
             key: "tema",
             render: (text: string, record: Topic) => (
-                <Tooltip
-                    title={tipoUsuario === "aluno" ? "Detalhes do tema" : "Editar tema"}
-                >
-                    <Button type="link" onClick={() => openModal(record)}>
-                        {text}
-                    </Button>
-                </Tooltip>
+                <>
+                    <Tooltip
+                        title={(tipoUsuario === "aluno" || tipoUsuario === "professor" && record.nome_professor !== nomeUsuario) ? "Detalhes do tema" : "Editar tema"}
+                    >
+                        <Button type="link" onClick={() => openModal(record)}>
+                            {text}
+                        </Button>
+                    </Tooltip>
+                </>
             ),
             ellipsis: true,
         },
@@ -116,7 +118,7 @@ export const TopicsView = ({
     ];
 
     return (
-        <>
+        <div style={{ height: "calc(100vh - 110px - 64px)" }}>
             <Space
                 style={{ 
                     marginBottom: 16,
@@ -165,7 +167,7 @@ export const TopicsView = ({
                     onTopicUpdated={handleUpdateTopic}
                 />
             )}
-        </>
+        </div>
         
     );
 }

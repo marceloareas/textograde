@@ -20,7 +20,7 @@ const ModalDetalhesTema: React.FC<TemaDetalhes> = ({
 }) => {
 	const [newDescription, setNewDescription] = useState<string>("");
 	const [newTopic, setNewTopic] = useState<string>("");
-	const { tipoUsuario } = useAuth();
+	const { tipoUsuario, nomeUsuario } = useAuth();
 
 	const handleEditTopic = async () => {
 		try {
@@ -65,51 +65,79 @@ const ModalDetalhesTema: React.FC<TemaDetalhes> = ({
 
 	return (
 		<Modal
-			title={tipoUsuario === "aluno" ? "Detalhes do Tema" : "Editar Tema"}
+			title={
+				(
+					tipoUsuario === "aluno" ||
+						tipoUsuario === "professor" &&
+						topic.nome_professor !== nomeUsuario
+				) ?
+				"Detalhes do Tema" :
+				"Editar Tema"
+			}
 			open={open}
 			onCancel={onCancel}
-			onOk={handleEditTopic}
+			onOk={
+				(
+					tipoUsuario === "aluno" ||
+						tipoUsuario === "professor" &&
+						topic.nome_professor !== nomeUsuario
+				) ? onCancel : handleEditTopic
+			}
+			cancelButtonProps={{ hidden: 
+				(
+					tipoUsuario === "aluno" ||
+						tipoUsuario === "professor" &&
+						topic.nome_professor !== nomeUsuario
+				)
+			}}
+
 		>
 				<>
-					{tipoUsuario === "aluno" ?(
-						<div>
-							<p><b>Professor</b>: {topic.nome_professor}</p>
-							<p><b>Tema</b>: {topic.tema}</p>
-							<p><b>Descrição</b>: {topic.descricao}</p>
-						</div>
-					) : (
-						<div>
-							<label style={{ marginBottom: "10px" }}>
-								<b>Professor</b>:
-							</label>
+					{
+						(
+							tipoUsuario === "aluno" ||
+							tipoUsuario === "professor" &&
+							topic.nome_professor !== nomeUsuario
+						) ? (
+							<div>
+								<p><b>Professor</b>: {topic.nome_professor}</p>
+								<p><b>Tema</b>: {topic.tema}</p>
+								<p><b>Descrição</b>: {topic.descricao}</p>
+							</div>
+						) : (
+							<div>
+								<label style={{ marginBottom: "10px" }}>
+									<b>Professor</b>:
+								</label>
 
-							<Input
-								style={{ marginBottom: "10px" }}
-								value={topic.nome_professor}
-								disabled
-							/>
+								<Input
+									style={{ marginBottom: "10px" }}
+									value={topic.nome_professor}
+									disabled
+								/>
 
-							<label style={{ marginBottom: "10px" }}>
-								<b>Tema</b>:
-							</label>
+								<label style={{ marginBottom: "10px" }}>
+									<b>Tema</b>:
+								</label>
 
-							<Input
-								style={{ marginBottom: "10px" }}
-								value={newTopic}
-								onChange={(e) => setNewTopic(e.target.value)}
-							/>
+								<Input
+									style={{ marginBottom: "10px" }}
+									value={newTopic}
+									onChange={(e) => setNewTopic(e.target.value)}
+								/>
 
-							<label style={{ marginBottom: "10px" }}>
-								<b>Descrição</b>:
-							</label>
-							
-							<Input.TextArea
-								style={{ marginBottom: "10px" }}
-								value={newDescription}
-								onChange={(e) => setNewDescription(e.target.value)}
-							/>
-						</div>
-					)}
+								<label style={{ marginBottom: "10px" }}>
+									<b>Descrição</b>:
+								</label>
+								
+								<Input.TextArea
+									style={{ marginBottom: "10px" }}
+									value={newDescription}
+									onChange={(e) => setNewDescription(e.target.value)}
+								/>
+							</div>
+						)
+					}
 				</>
 		</Modal>
 	);
