@@ -97,11 +97,9 @@ const Index = () => {
 				if (Array.isArray(data)) {
 					setTopicsData(data);
 				} else {
-					console.error("Dados inválidos recebidos para temas:", data);
 					setTopicsData([]);
 				}
 			} catch (error) {
-				console.error("Erro ao buscar os temas:", error);
 				setTopicsData([]);
 			}
 		};
@@ -127,11 +125,9 @@ const Index = () => {
 				if (Array.isArray(data)) {
 					setEssaysData(data);
 				} else {
-					console.error("Dados inválidos recebidos para redações:", data);
 					setEssaysData([]);
 				}
 			} catch (error) {
-				console.error("Erro ao buscar as redações:", error);
 				setEssaysData([]);
 			}
 		};

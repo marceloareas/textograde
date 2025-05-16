@@ -55,7 +55,6 @@ const Redacao = () => {
       setEssayGrade(response.data.grades);
       message.success("Redação avaliada com sucesso!");
     } catch (error) {
-      console.error("Erro ao avaliar redação:", error);
       message.error("Erro ao avaliar redação. Tente novamente.");
     }
   };
@@ -89,7 +88,6 @@ const Redacao = () => {
       setEssayGrade(response.data.grades);
       message.success("Imagem enviada e redação avaliada com sucesso!");
     } catch (error) {
-      console.error("Erro ao enviar imagem:", error);
       message.error("Erro ao avaliar redação por imagem. Tente novamente.");
     }
   };

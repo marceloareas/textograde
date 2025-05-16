@@ -34,7 +34,6 @@ export default function RedacaoPage(): ReactElement {
             throw new Error("Redação não encontrada");
           }
         } catch (error) {
-          console.error("Redação não encontrada");
           setLoading(false);
         }
       }

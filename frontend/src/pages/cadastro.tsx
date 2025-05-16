@@ -95,7 +95,6 @@ const Cadastro = () => {
         );
       } else {
         message.error("Ocorreu um erro inesperado");
-        console.error("Erro inesperado:", error);
       }
     }
   };

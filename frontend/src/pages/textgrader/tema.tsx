@@ -60,7 +60,6 @@ const Tema = () => {
         message.error(errorData.error || "Erro ao cadastrar o tema.");
       }
     } catch (error) {
-      console.error("Erro ao cadastrar o tema:", error);
       message.error("Erro ao cadastrar o tema. Por favor, tente novamente.");
     }
   };

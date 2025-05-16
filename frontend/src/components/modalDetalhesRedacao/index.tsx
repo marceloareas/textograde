@@ -39,8 +39,6 @@ const ModalDetalhesRedacao: React.FC<EssayDetails> = ({
 
     const handleUpdateEssay = async () => {
         try {
-            console.log(gradesUpdated);
-
             if (
                 gradesUpdated.grade1 === null ||
                 gradesUpdated.grade2 === null ||
