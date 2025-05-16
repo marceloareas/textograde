@@ -1,113 +1,118 @@
 import { Modal, Input, Button, message } from "antd";
-import { useState } from "react";
-import { Tema } from "@/pages/textgrader";
-import { useAuth } from "@/context";
-import { API_URL } from "@/config/config";
+import { useEffect, useState } from "react";
 import { client } from "../services/client";
+import { Topic } from "@/pages/textgrader";
+import { API_URL } from "@/config/config";
+import { useAuth } from "@/context";
 
 interface TemaDetalhes {
-  open: boolean;
-  onCancel: () => void;
-  tema: Tema | null;
-  onTemaEditado: (temaEditado: Tema) => void;
-}
+	open: boolean;
+	onCancel: () => void;
+	topic: Topic;
+	onTopicChanged: (newTopic: Topic) => void;
+};
 
 const ModalDetalhesTema: React.FC<TemaDetalhes> = ({
-  open,
-  onCancel,
-  tema,
-  onTemaEditado,
+	open,
+	onCancel,
+	topic,
+	onTopicChanged,
 }) => {
-  const [temaEditado, setTemaEditado] = useState<string>("");
-  const [descricaoEditada, setDescricaoEditada] = useState<string>("");
-  const { tipoUsuario, token } = useAuth(); // Recuperando o token do contexto
+	const [newDescription, setNewDescription] = useState<string>("");
+	const [newTopic, setNewTopic] = useState<string>("");
+	const { tipoUsuario } = useAuth();
 
-  const handleEditarTema = async () => {
-    if (!token) {
-      message.error("Você precisa estar autenticado para editar o tema.");
-      return;
-    }
+	const handleEditTopic = async () => {
+		try {
+			if (topic && (newDescription !== topic.descricao || newTopic !== topic.tema )) {				
+				const { data } = await client.put(`${API_URL}/tema/${topic._id}`, {
+					tema: newTopic ? newTopic : topic.tema,
+					descricao: newDescription ? newDescription : topic.descricao,
+					nome_professor: topic.nome_professor,
+				});
 
-    try {
-      if (tema && (descricaoEditada !== "" || temaEditado !== "")) {
-        const { data } = await client.put(`${API_URL}/tema/${tema._id}`, {
-          tema: temaEditado !== "" ? temaEditado : tema.tema,
-          descricao:
-            descricaoEditada !== "" ? descricaoEditada : tema.descricao,
-          nome_professor: tema.nome_professor,
-        });
+				if (data) {
+					message.success("Tema atualizado com sucesso!");
+					
+					onCancel();
 
-        if (data) {
-          message.success("Tema atualizado com sucesso!");
-          onCancel();
-          onTemaEditado({
-            ...tema,
-            tema: temaEditado !== "" ? temaEditado : tema.tema,
-            descricao:
-              descricaoEditada !== "" ? descricaoEditada : tema.descricao,
-          });
-        } else {
-          message.error("Erro ao atualizar o tema. Tente novamente.");
-        }
-      }
-    } catch (error) {
-      console.error("Erro ao atualizar o tema:", error);
-      message.error("Erro ao atualizar o tema. Por favor, tente novamente.");
-    }
-  };
+					onTopicChanged({
+						...topic,
+						tema: newTopic !== "" ? newTopic : topic.tema,
+						descricao:
+							newDescription !== "" ? newDescription : topic.descricao,
+					});
+				} else {
+					message.error("Erro ao atualizar o tema. Tente novamente.");
+				}
+			}
+		} catch (error) {
+			message.error("Erro ao atualizar o tema. Por favor, tente novamente.");
+		}
+	};
 
-  return (
-    <Modal
-      title={tipoUsuario === "aluno" ? "Detalhes do Tema" : "Editar Tema"}
-      open={open}
-      onCancel={onCancel}
-      footer={null}
-    >
-      {tema && tipoUsuario === "aluno" ? (
-        <div>
-          <p>
-            <b>Professor</b>: {tema.nome_professor}
-          </p>
-          <p>
-            <b>Tema</b>: {tema.tema}
-          </p>
-          <p>
-            <b>Descrição</b>: {tema.descricao}
-          </p>
-        </div>
-      ) : (
-        tema && (
-          <div>
-            <label style={{ marginBottom: "10px" }}>
-              <b>Professor</b>:
-            </label>
-            <Input
-              style={{ marginBottom: "10px" }}
-              value={tema.nome_professor}
-              disabled
-            />
-            <label style={{ marginBottom: "10px" }}>
-              <b>Tema</b>:
-            </label>
-            <Input
-              style={{ marginBottom: "10px" }}
-              defaultValue={tema.tema}
-              onChange={(e) => setTemaEditado(e.target.value)}
-            />
-            <label style={{ marginBottom: "10px" }}>
-              <b>Descrição</b>:
-            </label>
-            <Input.TextArea
-              style={{ marginBottom: "10px" }}
-              defaultValue={tema.descricao}
-              onChange={(e) => setDescricaoEditada(e.target.value)}
-            />
-            <Button onClick={handleEditarTema}>Editar</Button>
-          </div>
-        )
-      )}
-    </Modal>
-  );
+	useEffect(() => {
+		if (topic) {
+			setNewTopic(topic.tema);
+			setNewDescription(topic.descricao);
+		}
+
+		return () => {
+			setNewTopic("");
+			setNewDescription("");
+		}
+	}, [topic]);
+
+	return (
+		<Modal
+			title={tipoUsuario === "aluno" ? "Detalhes do Tema" : "Editar Tema"}
+			open={open}
+			onCancel={onCancel}
+			onOk={handleEditTopic}
+		>
+				<>
+					{tipoUsuario === "aluno" ?(
+						<div>
+							<p><b>Professor</b>: {topic.nome_professor}</p>
+							<p><b>Tema</b>: {topic.tema}</p>
+							<p><b>Descrição</b>: {topic.descricao}</p>
+						</div>
+					) : (
+						<div>
+							<label style={{ marginBottom: "10px" }}>
+								<b>Professor</b>:
+							</label>
+
+							<Input
+								style={{ marginBottom: "10px" }}
+								value={topic.nome_professor}
+								disabled
+							/>
+
+							<label style={{ marginBottom: "10px" }}>
+								<b>Tema</b>:
+							</label>
+
+							<Input
+								style={{ marginBottom: "10px" }}
+								value={newTopic}
+								onChange={(e) => setNewTopic(e.target.value)}
+							/>
+
+							<label style={{ marginBottom: "10px" }}>
+								<b>Descrição</b>:
+							</label>
+							
+							<Input.TextArea
+								style={{ marginBottom: "10px" }}
+								value={newDescription}
+								onChange={(e) => setNewDescription(e.target.value)}
+							/>
+						</div>
+					)}
+				</>
+		</Modal>
+	);
 };
 
 export default ModalDetalhesTema;

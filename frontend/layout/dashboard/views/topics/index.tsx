@@ -1,4 +1,4 @@
-import { ReactElement, useState } from "react";
+import { ReactElement, useEffect, useState } from "react";
 import { Button, Select, Space, Tooltip, message } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import Link from "next/link";
@@ -44,16 +44,22 @@ export const TopicsView = ({
         }
     };
 
+    const handleCloseModal = () => {
+        setModalVisible(false);
+        setSelectedTopic(null);
+    }
+
     const handleUpdateTopic = (updatedTopic: Topic) => {
         setTopicsData(
             topicsData.map((tema) =>
                 tema._id === updatedTopic._id ? updatedTopic : tema
             )
         );
+        handleCloseModal();
     };
 
-    const openModal = (tema: any) => {
-		setSelectedTopic(tema);
+    const openModal = (topic: Topic) => {
+		setSelectedTopic(topic);
 		setModalVisible(true);
 	};
 
@@ -108,7 +114,7 @@ export const TopicsView = ({
                 ),
         },
     ];
-    
+
     return (
         <>
             <Space
@@ -151,12 +157,14 @@ export const TopicsView = ({
                 columns={topicsColumns}
             />
 
-            <ModalDetalhesTema
-				open={topicModalVisible}
-				onCancel={() => setModalVisible(false)}
-				tema={selectedTopic}
-				onTemaEditado={handleUpdateTopic}
-			/>
+            {selectedTopic && (
+                <ModalDetalhesTema
+                    open={topicModalVisible}
+                    topic={selectedTopic}
+                    onCancel={handleCloseModal}
+                    onTopicChanged={handleUpdateTopic}
+                />
+            )}
         </>
         
     );
