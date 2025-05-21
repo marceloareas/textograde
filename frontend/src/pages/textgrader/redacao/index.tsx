@@ -1,9 +1,8 @@
 import axios from "axios";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { Button, Modal, Skeleton, message } from "antd";
+import { useState } from "react";
+import { Button, message } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
-import TextArea from "antd/lib/input/TextArea";
 import { useAuth } from "../../../context";
 import { API_URL } from "@/config/config";
 import withSession from "../../../hoc/withSession";
