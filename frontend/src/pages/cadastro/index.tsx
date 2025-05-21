@@ -1,43 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Button, Checkbox, Input, Layout, message } from "antd";
 import axios from "axios";
 import router from "next/router";
-import { useAuth } from "../context";
+import { useAuth } from "@/context";
 import { API_URL } from "@/config/config";
-import styled from "styled-components";
-
-const { Content } = Layout;
-
-const FormWrapper = styled(Content)`
-	padding: 20px 40px;
-	border-radius: 8px;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-	width: 350px;
-	max-height: 400px;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-`;
-
-const CheckboxGroup = styled.div`
-	margin-bottom: 20px;
-	display: flex;
-	justify-content: space-between;
-	width: 100%;
-`;
-
-const InputWrapper = styled.div`
-	margin-bottom: 20px;
-	width: 100%;
-`;
-
-const CenteredButton = styled.div`
-	display: flex;
-	width: 100%;
-  	text-align: center;
-	justify-content: space-between;
-`;
+import { CenteredButton, CheckboxGroup, FormWrapper, InputWrapper } from "./styles";
 
 const Cadastro = () => {
 	const [email, setEmail] = useState("");
@@ -66,7 +33,9 @@ const Cadastro = () => {
 		}
 	};
 
-	const handleCadastro = async () => {
+	const handleCadastro = async (e: FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+
 		const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
 		if (!emailRegex.test(email)) {
@@ -105,7 +74,7 @@ const Cadastro = () => {
 				alignItems: "center",
 			}}
 		>
-		<FormWrapper>
+		<FormWrapper onSubmit={handleCadastro}>
 			<h2 style={{ marginBottom: 40 }}>Cadastro</h2>
 
 			<CheckboxGroup>
@@ -159,7 +128,7 @@ const Cadastro = () => {
 					Cancelar
 				</Button>
 
-				<Button onClick={handleCadastro} type="primary" disabled={isDisabled}>
+				<Button htmlType="submit" type="primary" disabled={isDisabled}>
 					Cadastrar
 				</Button>
 			</CenteredButton>

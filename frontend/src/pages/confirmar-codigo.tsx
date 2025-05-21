@@ -46,66 +46,65 @@ const FullContainer = styled.div`
 `;
 
 const ResetPasswordCode = () => {
-  const { isLoggedIn } = useAuth();
-  const router = useRouter();
-  const { email } = router.query;
+	const { isLoggedIn } = useAuth();
+	const router = useRouter();
+	const { email } = router.query;
 
-  const [code, setCode] = useState("");
-  const [hasError, setHasError] = useState<boolean>(false);
+	const [code, setCode] = useState("");
+	const [hasError, setHasError] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      router.push("/textgrader/");
-    }
-  }, [isLoggedIn, router]);
+	useEffect(() => {
+		if (isLoggedIn) {
+			router.push("/textgrader/");
+		}
+	}, [isLoggedIn, router]);
 
-  const handleCheckCode = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+	const handleCheckCode = async (e: FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
 
-    try {
-      const { data } = await client.post("/verify-code", { email, code });
+		try {
+			const { data } = await client.post("/verify-code", { email, code });
 
-      if (data.access_token) {
-        localStorage.setItem("accessToken", data.access_token);
-        router.push("/redefinir-senha/");
-      }
-    } catch (error) {
-      setHasError(true);
-      message.error(
-        "Código Incorreto."
-      );
-    }
-  };
+			if (data.access_token) {
+				localStorage.setItem("resetPasswordAccessToken", data.access_token);
+				router.push("/redefinir-senha/");
+			}
+		} catch (error) {
+			setHasError(true);
+			message.error("Código Incorreto.");
+		}
+	};
 
-  return (
-    <Container>
-      <title>Redefinir senha</title>
-      <FormContainer onSubmit={handleCheckCode}>
-        <Title>Redefinir senha</Title>
+	return (
+		<Container>
+			<title>Redefinir senha</title>
 
-        <InputGroup>
-          <Input.OTP
-            status={hasError ? "error" : undefined}
-            type="text"
-            size="large"
-            value={code}
-            formatter={(value) => {
-              setHasError(false);
-              setCode(value.replace(/\D/g, ""));
-              return value.replace(/\D/g, "")}
-            }
-            length={5}
-          />
-        </InputGroup>
+			<FormContainer onSubmit={handleCheckCode}>
+				<Title>Redefinir senha</Title>
 
-        <FullContainer>
-          <Button disabled={!code || code.length < 5} block type="primary" htmlType="submit">
-            Continuar
-          </Button>
-        </FullContainer>
-      </FormContainer>
-    </Container>
-  );
+				<InputGroup>
+					<Input.OTP
+						status={hasError ? "error" : undefined}
+						type="text"
+						size="large"
+						value={code}
+						formatter={(value) => {
+							setHasError(false);
+							setCode(value.replace(/\D/g, ""));
+							return value.replace(/\D/g, "")}
+						}
+						length={5}
+					/>
+				</InputGroup>
+
+				<FullContainer>
+					<Button disabled={!code || code.length < 5} block type="primary" htmlType="submit">
+						Continuar
+					</Button>
+				</FullContainer>
+			</FormContainer>
+		</Container>
+	);
 };
 
 export default ResetPasswordCode;

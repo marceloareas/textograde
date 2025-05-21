@@ -40,6 +40,15 @@ export const getAccessToken = async (): Promise<string | null> => {
 	}
 };
 
+export const getResetPasswordAccessToken = async (): Promise<string | null> => {
+	try {
+		const isClient = typeof window === "object";
+		return isClient ? window.localStorage.getItem("resetPasswordAccessToken") : null;
+	} catch (err) {
+		throw new Error("Could not retrieve refresh token");
+	}
+};
+
 const getAuthToken = async () => await getAccessToken();
 const setAuthToken = (token: string) => localStorage.setItem("accessToken", token);
 const removeAuthToken = () => localStorage.removeItem("accessToken");
@@ -83,6 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		const tokenFromStorage = await getAuthToken();
 
 		if (tokenFromStorage) {
+			alert("Token encontrado no localStorage");
 			setToken(tokenFromStorage);
 			
 			try {

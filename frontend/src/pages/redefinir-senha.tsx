@@ -3,7 +3,7 @@ import { Button, Input, Layout, message } from "antd";
 import { useRouter } from "next/router";
 import { useAuth } from "../context";
 import styled from "styled-components";
-import { client } from "@/services/client";
+import { resetPasswordClient } from "@/services/resetPasswordClient";
 
 const Container = styled(Layout)`
   height: calc(100vh - 46px - 64px);  
@@ -41,89 +41,89 @@ const FullContainer = styled.div`
 `;
 
 const ResetPassword = () => {
-  const { isLoggedIn } = useAuth();
-  const router = useRouter();
+	const { isLoggedIn } = useAuth();
+	const router = useRouter();
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [hasError, setHasError] = useState<boolean>(false);
+	const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
+	const [hasError, setHasError] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      router.push("/textgrader/");
-    }
-  }, [isLoggedIn, router]);
+	useEffect(() => {
+		if (isLoggedIn) {
+			router.push("/textgrader/");
+		}
+	}, [isLoggedIn, router]);
 
-  const handleChangePassword = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-      
-    if (!password || !confirmPassword) {
-      message.warning("Por favor, preencha todos os campos.");
-      return;
-    }
+	const handleChangePassword = async (e: FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		
+		if (!password || !confirmPassword) {
+			message.warning("Por favor, preencha todos os campos.");
+			return;
+		}
 
-    if (password !== confirmPassword) {
-      message.warning("As senhas não são iguais.");
-      setHasError(true);
-      return;
-    }
+		if (password !== confirmPassword) {
+			message.warning("As senhas não são iguais.");
+			setHasError(true);
+			return;
+		}
 
-    try {
-      const { data } = await client.post("/reset-password", {
-        new_password: password,
-      });
+		try {
+			const { data } = await resetPasswordClient.post("/reset-password", {
+				new_password: password,
+			});
 
-      if (data.status) {
-        message.success("Senha redefinida com sucesso!");
-        localStorage.removeItem("accessToken");
-        router.push("/login");
-        return;
-      }
-    } catch (error) {
-      message.error(
-        "Ocorreu um erro ao redefinir sua senha. Verifique se os dados estão corretos."
-      );
-    }
-  };
+			if (data.status) {
+				message.success("Senha redefinida com sucesso!");
+				localStorage.removeItem("resetPasswordAccessToken");
+				router.push("/login");
+			}
+		} catch (error) {
+			message.error(
+				"Ocorreu um erro ao redefinir sua senha. Verifique se os dados estão corretos."
+			);
+		}
+	};
 
-  return (
-    <Container>
-      <title>Confirme o código</title>
-      <FormContainer onSubmit={handleChangePassword}>
-        <Title>Redefina sua senha</Title>
+	return (
+		<Container>
+			<title>Confirme o código</title>
 
-        <InputGroup>
-          <Input.Password
-            placeholder="Digite sua nova Senha"
-            status={hasError ? "error" : undefined}
-            value={password}
-            onChange={(e) => {
-              setHasError(false);
-              setPassword(e.target.value)
-            }}
-          />
-        </InputGroup>
+			<FormContainer onSubmit={handleChangePassword}>
+				<Title>Redefina sua senha</Title>
 
-        <InputGroup>
-          <Input.Password 
-            placeholder="Confirme sua nova Senha"
-            status={hasError ? "error" : undefined}
-            value={confirmPassword}
-            onChange={(e) => {
-              setHasError(false);
-              setConfirmPassword(e.target.value)
-            }}
-          />
-        </InputGroup>
+				<InputGroup>
+					<Input.Password
+						placeholder="Digite sua nova Senha"
+						status={hasError ? "error" : undefined}
+						value={password}
+						onChange={(e) => {
+						setHasError(false);
+						setPassword(e.target.value)
+						}}
+					/>
+				</InputGroup>
 
-        <FullContainer>
-          <Button block type="primary" htmlType="submit">
-            Redefinir senha
-          </Button>
-        </FullContainer>
-      </FormContainer>
-    </Container>
-  );
+				<InputGroup>
+					<Input.Password 
+						placeholder="Confirme sua nova Senha"
+						status={hasError ? "error" : undefined}
+						value={confirmPassword}
+						onChange={(e) => {
+						setHasError(false);
+						setConfirmPassword(e.target.value)
+						}}
+					/>
+				</InputGroup>
+
+				<FullContainer>
+					<Button block type="primary" htmlType="submit">
+						Redefinir senha
+					</Button>
+				</FullContainer>
+			</FormContainer>
+		</Container>
+	);
 };
 
 export default ResetPassword;
