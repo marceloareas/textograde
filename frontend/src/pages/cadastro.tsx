@@ -90,13 +90,7 @@ const Cadastro = () => {
 			setNomeUsuario("");
 			router.push("/login");
 		} catch (error) {
-			if (axios.isAxiosError(error)) {
-				message.error(
-					error.response?.data?.error || "Erro ao cadastrar usuário"
-				);
-			} else {
-				message.error("Ocorreu um erro inesperado");
-			}
+			message.error("Erro ao cadastrar usuário");
 		}
 	};
 
