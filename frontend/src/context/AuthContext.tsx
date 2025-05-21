@@ -90,7 +90,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         );
       } else {
         message.error("Ocorreu um erro inesperado");
-        console.error("Erro inesperado:", error);
       }
     }
   }, [router]);
