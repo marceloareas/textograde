@@ -13,7 +13,7 @@ import TextEditor from "@/components/textEditor";
 const Redacao = () => {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [essay, setEssay] = useState("");
-	const [essayGrade, setEssayGrade] = useState(null);
+	// const [essayGrade, setEssayGrade] = useState(null);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const router = useRouter();
 	const { id } = router.query;
@@ -47,15 +47,15 @@ const Redacao = () => {
 				}
 			);
 
-			setEssayGrade(response.data.grades);
+			// setEssayGrade(response.data.grades);
 
 			message.success("Redação avaliada com sucesso!");
+
+			router.push(`/textgrader?tab=redacoes&essayId=${response.data.essay_id}`);
 		} catch (error) {
 			message.error("Erro ao avaliar redação. Tente novamente.");
 		}
 	};
-
-	const clearEssay = () => setEssay("");
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files.length > 0) {
@@ -81,7 +81,7 @@ const Redacao = () => {
 				},
 			});
 
-			setEssayGrade(response.data.grades);
+			// setEssayGrade(response.data.grades);
 
 			message.success("Imagem enviada e redação avaliada com sucesso!");
 		} catch (error) {
@@ -107,7 +107,7 @@ const Redacao = () => {
 
 				<ButtonWrapper>
 					<Button
-						onClick={clearEssay}
+						onClick={() => router.push("/textgrader?tab=temas")}
 						size="large"
 						type="text"
 					>
@@ -124,7 +124,7 @@ const Redacao = () => {
 					</Button>
 				</ButtonWrapper>
 
-				<Modal
+				{/* <Modal
 					title="Nota da redação"
 					open={isModalOpen}
 					onOk={handleOk}
@@ -140,7 +140,7 @@ const Redacao = () => {
 					) : (
 						<Skeleton paragraph={{ rows: 0 }} />
 					)}
-				</Modal>
+				</Modal> */}
 			</Wrapper>
 		</Root>
 	);

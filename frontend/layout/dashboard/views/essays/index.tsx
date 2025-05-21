@@ -1,10 +1,11 @@
-import { ReactElement, useState } from "react";
+import { ReactElement, useEffect, useState } from "react";
 import { Button, Select, Space, Tooltip } from "antd";
 import { SearchInput } from "@/components/searchInput";
 import CustomTable from "@/components/customTable";
 import { useAuth } from "@/context";
 import { Essay, Topic } from "@/pages/textgrader";
 import ModalDetalhesRedacao from "@/components/modalDetalhesRedacao";
+import { useRouter } from "next/router";
 
 const { Option } = Select;
 
@@ -25,12 +26,15 @@ export const EssaysView = ({
     topicsData,
     filteredEssaysData,
 }: IEssaysViewProps): ReactElement => {
+    const router = useRouter();
+    const { essayId } = router.query;
+    
     const { tipoUsuario } = useAuth();
 
     const [essayModalVisible, setEssayModalVisible] = useState(false);
 	const [selectedEssay, setSelectedEssay] = useState<Essay | null>(null);
 
-    const openEssayModal = (essay: any) => {
+    const openEssayModal = (essay: Essay) => {
         setSelectedEssay(essay);
         setEssayModalVisible(true);
     };
@@ -141,6 +145,13 @@ export const EssaysView = ({
             },
         },
     ];
+
+    useEffect(() => {
+        if (essaysData) {
+            const findEssay = essaysData.findLast(essay => essay._id === essayId)
+            if (findEssay) openEssayModal(findEssay);
+        }
+    }, [essayId, essaysData]);
 
     return (
         <>

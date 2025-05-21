@@ -31,6 +31,7 @@ export const Root = styled.div`
 
             &:first-of-type {
                 font-size: 24px;
+                font-weight: 700;
                 line-height: 32px;
                 margin-bottom: 10px;
                 padding: 0;

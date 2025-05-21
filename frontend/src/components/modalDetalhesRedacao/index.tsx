@@ -123,7 +123,7 @@ const ModalDetalhesRedacao: React.FC<EssayDetails> = ({
             title={tipoUsuario === "aluno" ? "Detalhes da redação" : "Editar redação"}
             open={open}
             onCancel={onCancel}
-            onOk={tipoUsuario === "aluno" ? ()=>{} : handleUpdateEssay}
+            onOk={tipoUsuario === "aluno" ? onCancel : handleUpdateEssay}
             width="80vw"
             style={{ height: "80vh", top: "10px" }}
         >
