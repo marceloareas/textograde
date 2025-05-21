@@ -46,7 +46,8 @@ const ModalDetalhesRedacao: React.FC<EssayDetails> = ({
                 gradesUpdated.grade4 === null ||
                 gradesUpdated.grade5 === null
             ) {
-                return message.error("Erro ao atualizar a redação. Preencha todas as notas.");
+                message.error("Erro ao atualizar a redação. Preencha todas as notas.");
+                return;
             }
 
             if (
@@ -56,7 +57,8 @@ const ModalDetalhesRedacao: React.FC<EssayDetails> = ({
                 essay.nota_competencia_4_professor &&
                 essay.nota_competencia_5_professor
             ) {
-                return message.error("Redação já foi corrigida!");
+                message.error("Redação já foi corrigida!");
+                return;
             }
             
             if (essay) {

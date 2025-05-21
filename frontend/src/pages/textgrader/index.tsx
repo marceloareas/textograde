@@ -216,7 +216,7 @@ const Index = () => {
 				</TabPane>
 
 				<TabPane tab="Redações" key="2">
-					<EssaysView 
+					<EssaysView
 						essaysData={essaysData}
 						setEssaysData={setEssaysData}
 						setFilterEssayTopicsType={setFilterEssayTopicsType}

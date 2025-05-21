@@ -1,13 +1,13 @@
-import { ReactElement, useEffect, useState } from "react";
-import { Button, Select, Space, Tooltip, message } from "antd";
+import { ReactElement, useState } from "react";
+import { Button, Select, Space, Tooltip } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { SearchInput } from "@/components/searchInput";
 import CustomTable from "@/components/customTable";
 import { useAuth } from "@/context";
 import { Topic } from "@/pages/textgrader";
-import { client } from "@/services/client";
 import ModalDetalhesTema from "@/components/modalDetalhesTema";
+import ModalDeleteTheme from "@/components/modalDeleteTopic";
 
 const { Option } = Select;
 
@@ -29,23 +29,21 @@ export const TopicsView = ({
     const { tipoUsuario, nomeUsuario } = useAuth();
 
     const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
-    const [topicModalVisible, setModalVisible] = useState(false);
+    const [updateModalVisible, setUpdateModalVisible] = useState(false);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
     const handleDeleteTopic = async (id: string) => {
-        try {
-            const { data } = await client.delete(`/tema/${id}`);
-
-            if (data) {
-                setTopicsData(topicsData.filter((tema) => tema._id !== id));
-                message.success("Tema deletado com sucesso!");
-            }
-        } catch (error) {
-            message.error("Erro ao deletar o tema. Por favor, tente novamente.");
-        }
+        setTopicsData(topicsData.filter((tema) => tema._id !== id));
+        setDeleteModalVisible(false);
     };
 
-    const handleCloseModal = () => {
-        setModalVisible(false);
+    const handleCloseUpdateModal = () => {
+        setUpdateModalVisible(false);
+        setSelectedTopic(null);
+    }
+
+    const handleCloseDeleteModal = () => {
+        setDeleteModalVisible(false);
         setSelectedTopic(null);
     }
 
@@ -55,12 +53,17 @@ export const TopicsView = ({
                 tema._id === updatedTopic._id ? updatedTopic : tema
             )
         );
-        handleCloseModal();
+        handleCloseUpdateModal();
     };
 
-    const openModal = (topic: Topic) => {
+    const openUpdateModal = (topic: Topic) => {
 		setSelectedTopic(topic);
-		setModalVisible(true);
+		setUpdateModalVisible(true);
+	};
+
+    const openDeleteModal = (topic: Topic) => {
+		setSelectedTopic(topic);
+		setDeleteModalVisible(true);
 	};
 
     const topicsColumns = [
@@ -79,7 +82,7 @@ export const TopicsView = ({
                     <Tooltip
                         title={(tipoUsuario === "aluno" || tipoUsuario === "professor" && record.nome_professor !== nomeUsuario) ? "Detalhes do tema" : "Editar tema"}
                     >
-                        <Button type="link" onClick={() => openModal(record)}>
+                        <Button type="link" onClick={() => openUpdateModal(record)}>
                             {text}
                         </Button>
                     </Tooltip>
@@ -101,7 +104,7 @@ export const TopicsView = ({
                 (
                     <Tooltip title="Deletar tema">
                         <Button
-                            onClick={() => handleDeleteTopic(record._id)}
+                            onClick={() => openDeleteModal(record)}
                             danger
                             icon={<DeleteOutlined />}
                         />
@@ -160,12 +163,21 @@ export const TopicsView = ({
             />
 
             {selectedTopic && (
-                <ModalDetalhesTema
-                    open={topicModalVisible}
-                    topic={selectedTopic}
-                    onCancel={handleCloseModal}
-                    onTopicUpdated={handleUpdateTopic}
-                />
+                <>
+                    <ModalDetalhesTema
+                        open={updateModalVisible}
+                        topic={selectedTopic}
+                        onCancel={handleCloseUpdateModal}
+                        onTopicUpdated={handleUpdateTopic}
+                    />
+
+                    <ModalDeleteTheme
+                        open={deleteModalVisible}
+                        topic={selectedTopic}
+                        onCancel={handleCloseDeleteModal}
+                        onTopicDeleted={handleDeleteTopic}
+                    />
+                </>
             )}
         </div>
         

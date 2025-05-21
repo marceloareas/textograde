@@ -8,7 +8,6 @@ import ModalDetalhesRedacao from "@/components/modalDetalhesRedacao";
 
 const { Option } = Select;
 
-
 interface IEssaysViewProps {
     essaysData: Essay[];
     setEssaysData: (data: Essay[]) => void;

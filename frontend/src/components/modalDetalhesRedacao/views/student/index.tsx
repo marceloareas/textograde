@@ -2,6 +2,7 @@ import { ReactElement } from "react";
 import { Input, Button, Collapse } from "antd";
 import TextArea from "antd/lib/input/TextArea";
 import { Essay } from "@/pages/textgrader";
+import { inputStyle, labelStyle } from "../../styles";
 
 const { Panel } = Collapse;
 

@@ -79,29 +79,30 @@ const ForgotPassword = () => {
 
   return (
     <Container>
-      <title>Esqueceu sua senha</title>
-      <FormContainer onSubmit={handleSendResetPasswordToEmail}>
-        <Title>Esqueceu sua senha?</Title>
+		<title>Esqueceu sua senha</title>
 
-        <InputGroup>
-          <Input
-            placeholder="Digite seu email"
-            type="email"
-            value={email}
-            status={hasError ? "error" : undefined}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setHasError(false);
-            }}
-          />
-        </InputGroup>
+		<FormContainer onSubmit={handleSendResetPasswordToEmail}>
+			<Title>Esqueceu sua senha?</Title>
 
-        <FullContainer onSubmit={() => alert("CLICK")}>
-          <Button block type="primary" htmlType="submit">
-            Redefinir senha
-          </Button>
-        </FullContainer>
-      </FormContainer>
+			<InputGroup>
+				<Input
+					placeholder="Digite seu email"
+					type="email"
+					value={email}
+					status={hasError ? "error" : undefined}
+					onChange={(e) => {
+						setEmail(e.target.value);
+						setHasError(false);
+					}}
+				/>
+			</InputGroup>
+
+			<FullContainer onSubmit={() => alert("CLICK")}>
+				<Button block type="primary" htmlType="submit">
+					Redefinir senha
+				</Button>
+			</FullContainer>
+		</FormContainer>
     </Container>
   );
 };

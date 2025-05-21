@@ -133,6 +133,7 @@ const ModalDetalhesTema: React.FC<TemaDetalhes> = ({
 									style={{ marginBottom: "10px" }}
 									value={newDescription}
 									onChange={(e) => setNewDescription(e.target.value)}
+									autoSize={{ minRows: 5, maxRows: 5 }}
 								/>
 							</div>
 						)
