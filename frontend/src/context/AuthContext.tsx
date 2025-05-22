@@ -92,7 +92,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		const tokenFromStorage = await getAuthToken();
 
 		if (tokenFromStorage) {
-			alert("Token encontrado no localStorage");
 			setToken(tokenFromStorage);
 			
 			try {
