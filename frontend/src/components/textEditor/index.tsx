@@ -1,28 +1,14 @@
-import Document from '@tiptap/extension-document'
-import Placeholder from '@tiptap/extension-placeholder'
+import StarterKit from "@tiptap/starter-kit";
 import { EditorContent, useEditor } from '@tiptap/react'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
 
 import { Root } from "./styles"
 
-const CustomDocument = Document.extend({
-  content: `paragraph block*`,
-})
-
 const extensions = [
-    CustomDocument,
+    StarterKit,
     Paragraph,
     Text,
-    Placeholder.configure({
-        placeholder: ({ node }) => {
-            if (node.type.name === "heading") {
-                return "Adicione o título..."
-            }
-
-            return "Adicione mais texto..."
-        },
-    }),
 ]
 
 interface ITextEditorProps {

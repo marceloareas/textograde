@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { Button, message } from "antd";
+import { Button, Input, message } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
 import { useAuth } from "../../../context";
 import { API_URL } from "@/config/config";
@@ -17,6 +17,8 @@ const Redacao = () => {
 	const router = useRouter();
 	const { id } = router.query;
 	const { token } = useAuth();
+
+	const [title, setTitle] = useState<string>("");
 
 	const showModalText = async () => {
 		await getEssayGrade();
@@ -102,7 +104,26 @@ const Redacao = () => {
 					Ao escrever sua redação, o título deverá estar na primeira linha
 				</label>
 
-				<TextEditor onChange={handleChange} />
+				<div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
+					<label>
+						Título
+					</label>
+
+					<Input
+						placeholder="Digite o título da redação"
+						type="title"
+						value={title}
+						onChange={(e) => setTitle(e.target.value)}
+					/>
+				</div>
+
+				<div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", marginTop: "20px" }}>
+					<label>
+						Redação
+					</label>
+
+					<TextEditor onChange={handleChange} />
+				</div>
 
 				<ButtonWrapper>
 					<Button
