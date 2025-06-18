@@ -111,7 +111,7 @@ export const TopicsView = ({
                     </Tooltip>
                 ) : (
                     tipoUsuario === "aluno" && (
-                        <Link href={`/textgrader/redacao?id=${record._id}`}>
+                        <Link href={`/textgrader/redacao?id=${record._id}&t=${record.tema}`}>
                             <PlusOutlined style={{ fontSize: "16px", marginRight: "8px" }} />
                             Inserir Nova Redação
                         </Link>
