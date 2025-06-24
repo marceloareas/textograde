@@ -5,7 +5,7 @@ export const Root = styled.div`
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 500px;
+    height: 400px;
     background: #fff;
     border-radius: 8px;
     border: 1px solid #eaeaea;
@@ -28,15 +28,6 @@ export const Root = styled.div`
 
         > p {
             margin: 0;
-
-            &:first-of-type {
-                font-size: 24px;
-                font-weight: 700;
-                line-height: 32px;
-                margin-bottom: 10px;
-                padding: 0;
-                color: #000;
-            }
         }
 
     }

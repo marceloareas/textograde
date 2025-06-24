@@ -2,7 +2,7 @@ import { Button, Input, Modal, message } from "antd";
 import { client } from "../../services/client";
 import { Topic } from "@/pages/textgrader";
 import { Content, DeleteTopicContainer, StyledInput } from "./styles";
-import { useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 interface ThemeDetails {
 	open: boolean;
@@ -19,18 +19,27 @@ const ModalDeleteTopic: React.FC<ThemeDetails> = ({
 }) => {
 	const [topicName, setTopicName] = useState<string>("");
 	
-	const handleDeleteTopic = async () => {
+	const handleDeleteTopic = async (e: FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+
 		try {
             const { data } = await client.delete(`/tema/${topic._id}`);
 
             if (data) {
 				onTopicDeleted(topic._id);
+				setTopicName("");
                 message.success("Tema deletado com sucesso!");
             }
         } catch (error) {
             message.error("Erro ao deletar o tema. Por favor, tente novamente.");
         }
 	};
+
+	useEffect(() => {
+		return () => {
+			setTopicName("");	
+		}
+	}, [])
 
 	return (
 		<Modal
@@ -41,7 +50,7 @@ const ModalDeleteTopic: React.FC<ThemeDetails> = ({
 			centered
 			onCancel={onCancel}
 		>
-			<Content>
+			<Content onSubmit={handleDeleteTopic}>
 				<h2> Deseja realmente remover o tema abaixo?</h2>
 
 				<DeleteTopicContainer>{topic.tema}</DeleteTopicContainer>
@@ -74,9 +83,9 @@ const ModalDeleteTopic: React.FC<ThemeDetails> = ({
 					</Button>
 
 					<Button
+						htmlType="submit"
 						variant="solid"
 						color="danger"
-						onClick={handleDeleteTopic}
 						disabled={topicName.toLowerCase() !== topic.tema.toLowerCase()}
 					>
 						Remover
