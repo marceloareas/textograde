@@ -1,17 +1,19 @@
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { Button, Input, message } from "antd";
-import { CheckOutlined } from "@ant-design/icons";
+import { Button, Input, message, Spin, Upload } from "antd";
+import { CheckOutlined, UploadOutlined } from "@ant-design/icons";
 import { useAuth } from "../../../context";
 import { API_URL } from "@/config/config";
 import withSession from "../../../hoc/withSession";
 import { ButtonWrapper, Root, Title, Wrapper } from "./styles";
 import TextEditor from "@/components/textEditor";
+import { UploadProps } from "antd/lib";
 
 const Redacao = () => {
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [essay, setEssay] = useState("");
+	const [essay, setEssay] = useState<string>("");
+	const [essayFromImage, setEssayFromImage] = useState<string>("");
 	// const [essayGrade, setEssayGrade] = useState(null);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const router = useRouter();
@@ -19,6 +21,8 @@ const Redacao = () => {
 	const { token } = useAuth();
 
 	const [title, setTitle] = useState<string>("");
+
+	const [isLoadingImage, setIsLoadingImage] = useState<boolean>(false);
 
 	useEffect(() => {
 		setTitle(t as string);
@@ -28,14 +32,6 @@ const Redacao = () => {
 		}
 	}, [t])
 	
-
-	const showModalText = async () => {
-		await getEssayGrade();
-		setIsModalOpen(true);
-	};
-
-	const handleChange = (text: string) => setEssay(text);
-
 	const getEssayGrade = async () => {
 		if (!essay.trim()) {
 			message.error("Por favor, escreva uma redação antes de enviar.");
@@ -63,41 +59,32 @@ const Redacao = () => {
 		}
 	};
 
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (e.target.files && e.target.files.length > 0) {
-			setSelectedFile(e.target.files[0]);
-		}
-	};
+	const props: UploadProps = {
+		customRequest: async ({ file }) => {
+			const formData = new FormData();
+    		formData.append("imagem", file as File);
+			setIsLoadingImage(true);
 
-	const uploadImage = async () => {
-		if (!selectedFile) {
-			message.error("Selecione uma imagem antes de enviar.");
-			return;
-		}
+			try {
+				const response = await axios.post(`${API_URL}/redacao/image-to-text`, formData, {
+					headers: {
+						"Content-Type": "multipart/form-data",
+						Authorization: `Bearer ${token}`,
+					},
+				});
 
-		const formData = new FormData();
-		formData.append("image", selectedFile);
-		formData.append("id", id ? id.toString() : "");
+				setEssayFromImage(response.data.text);
+				setEssay(response.data.text);
 
-		try {
-			const response = await axios.post(`${API_URL}/redacao/imagem`, formData, {
-				headers: {
-					"Content-Type": "multipart/form-data",
-					Authorization: `Bearer ${token}`,
-				},
-			});
-
-			// setEssayGrade(response.data.grades);
-
-			message.success("Imagem enviada e redação avaliada com sucesso!");
-		} catch (error) {
-			message.error("Erro ao avaliar redação por imagem. Tente novamente.");
-		}
-	};
-
-	const showModalImage = async () => {
-		await uploadImage();
-		setIsModalOpen(true);
+				setIsLoadingImage(false);
+				message.success("Imagem enviada com sucesso!");
+			} catch (error) {
+				setIsLoadingImage(false);
+				message.error("Erro ao enviar imagem. Tente novamente!");
+			}
+		},
+		showUploadList: false,
+		listType: "text",
 	};
 
 	return (
@@ -119,11 +106,20 @@ const Redacao = () => {
 				</div>
 
 				<div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", marginTop: "20px" }}>
-					<label>
-						Redação
-					</label>
+					<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+						<label>
+							Redação
+						</label>
 
-					<TextEditor onChange={handleChange} />
+						<div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+							{isLoadingImage && <Spin size="small" />}
+							<Upload {...props}>
+								<Button icon={<UploadOutlined />}>Enviar imagem</Button>
+							</Upload>
+						</div>
+					</div>
+
+					<TextEditor onChange={setEssay} value={essayFromImage} />
 				</div>
 
 				<ButtonWrapper>
@@ -136,7 +132,7 @@ const Redacao = () => {
 					</Button>
 
 					<Button
-						onClick={showModalText}
+						onClick={getEssayGrade}
 						size="large"
 						type="primary"
 						icon={<CheckOutlined />}

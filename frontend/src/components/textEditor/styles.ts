@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const Root = styled.div`
-    padding: 30px;
+    padding: 30px 30px 15px 30px;
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -12,8 +12,7 @@ export const Root = styled.div`
     overflow: auto;
     
     div {
-        margin-bottom: 20px;
-        height: 100%;
+        height: fit-content;
     }
 
     p {

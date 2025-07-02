@@ -436,7 +436,7 @@ def ocr_imagem():
         image_stream = BytesIO(file.read())
         texto_extraido = read_text_from_image(image_stream)
 
-        return jsonify({"texto": texto_extraido}), 200
+        return jsonify({"text": texto_extraido}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
