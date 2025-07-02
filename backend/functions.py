@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import os
 import time
 import requests
+from typing import BinaryIO
 load_dotenv()
 
 #Configure sua chave de API da AZURE
@@ -107,7 +108,7 @@ def send_email(subject, recipient_email, body):
         print("Detalhes:", response.text)
         return False
 
-def read_text_from_image(image_url: str) -> str:
+def read_text_from_image(image_stream: BinaryIO) -> str:
     subscription_key = os.getenv("AZURE_KEY")
     endpoint = os.getenv("AZURE_ENDPOINT")
 
@@ -116,7 +117,7 @@ def read_text_from_image(image_url: str) -> str:
 
     computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
 
-    read_response = computervision_client.read(image_url, raw=True)
+    read_response = computervision_client.read_in_stream(image_stream, raw=True)
 
     read_operation_location = read_response.headers["Operation-Location"]
     operation_id = read_operation_location.split("/")[-1]
