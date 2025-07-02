@@ -1,9 +1,10 @@
+from io import BytesIO
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from pymongo import MongoClient
 from bson import ObjectId
 import os
-from functions import persist_essay, get_text
+from functions import persist_essay, get_text, read_text_from_image
 
 redacao_bp = Blueprint('redacao', __name__)
 
@@ -410,3 +411,32 @@ def avaliar_redacao_imagem():
 
     persist_essay(essay, obj)
     return response
+
+@redacao_bp.post("/image-to-text")
+@jwt_required()
+def ocr_imagem():
+    """
+    Recebe uma imagem e retorna o texto extraído usando Azure OCR.
+    Permitido para usuários autenticados (admin ou aluno).
+    """
+    try:
+        current_user_email = get_jwt_identity()
+        current_user = db.users.find_one({"email": current_user_email})
+
+        if not check_user_permission(current_user):
+            return jsonify({"message": "Você não tem permissão para utilizar essa funcionalidade."}), 403
+
+        if 'imagem' not in request.files:
+            return jsonify({"error": "Nenhuma imagem enviada."}), 400
+
+        file = request.files['imagem']
+        if file.filename == '':
+            return jsonify({"error": "Nome de arquivo inválido."}), 400
+
+        image_stream = BytesIO(file.read())
+        texto_extraido = read_text_from_image(image_stream)
+
+        return jsonify({"texto": texto_extraido}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

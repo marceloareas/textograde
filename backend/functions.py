@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import os
 import time
 import requests
+from typing import BinaryIO
 load_dotenv()
 
 #Configure sua chave de API da AZURE
@@ -35,7 +36,6 @@ def use_vectorizer(df_train):
     return df_vetorizado
 
 def evaluate_redacao(redacao):
-   
     tupla = (redacao, )
     texto_df = pd.DataFrame(tupla,columns = ['texto'])
     modelo_salvo = pickle.load(open('model.pkl','rb'))
@@ -107,3 +107,33 @@ def send_email(subject, recipient_email, body):
         print("Status:", response.status_code)
         print("Detalhes:", response.text)
         return False
+
+def read_text_from_image(image_stream: BinaryIO) -> str:
+    subscription_key = os.getenv("AZURE_KEY")
+    endpoint = os.getenv("AZURE_ENDPOINT")
+
+    if not subscription_key or not endpoint:
+        raise EnvironmentError("As variáveis de ambiente AZURE_KEY e AZURE_ENDPOINT devem estar definidas.")
+
+    computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
+
+    read_response = computervision_client.read_in_stream(image_stream, raw=True)
+
+    read_operation_location = read_response.headers["Operation-Location"]
+    operation_id = read_operation_location.split("/")[-1]
+
+    while True:
+        read_result = computervision_client.get_read_result(operation_id)
+        if read_result.status not in ['notStarted', 'running']:
+            break
+        time.sleep(1)
+
+    if read_result.status == OperationStatusCodes.succeeded:
+        lines = []
+        for page in read_result.analyze_result.read_results:
+            for line in page.lines:
+                lines.append(line.text)
+        full_text = "\n".join(lines)
+        return full_text
+    else:
+        raise Exception("A operação de leitura falhou ou não retornou resultado.")
