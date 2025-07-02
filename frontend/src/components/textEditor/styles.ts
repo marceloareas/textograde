@@ -10,8 +10,9 @@ export const Root = styled.div`
     border-radius: 8px;
     border: 1px solid #eaeaea;
     overflow: auto;
-
+    
     div {
+        margin-bottom: 20px;
         height: 100%;
     }
 
@@ -21,7 +22,7 @@ export const Root = styled.div`
 
     .tiptap {
         height: 100%;
-
+        
         &:first-child {
             margin-top: 0;
         }
@@ -29,10 +30,11 @@ export const Root = styled.div`
         > p {
             margin: 0;
         }
-
+        
     }
-
+    
     .ProseMirror {
+        padding-bottom: 20px;
         &:focus {
             outline: none;
         }

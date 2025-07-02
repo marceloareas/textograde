@@ -148,24 +148,6 @@ const Redacao = () => {
 						Obter nota
 					</Button>
 				</ButtonWrapper>
-
-				{/* <Modal
-					title="Nota da redação"
-					open={isModalOpen}
-					onOk={handleOk}
-					onCancel={handleCancel}
-					footer={null}
-				>
-					{essayGrade ? (
-						Object.entries(essayGrade).map(([key, value], index) => (
-							<p key={index}>
-								{key}: {String(value)}
-							</p>
-						))
-					) : (
-						<Skeleton paragraph={{ rows: 0 }} />
-					)}
-				</Modal> */}
 			</Wrapper>
 		</Root>
 	);
