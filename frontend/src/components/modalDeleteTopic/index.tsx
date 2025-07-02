@@ -51,7 +51,7 @@ const ModalDeleteTopic: React.FC<ThemeDetails> = ({
 			onCancel={onCancel}
 		>
 			<Content onSubmit={handleDeleteTopic}>
-				<h2> Deseja realmente remover o tema abaixo?</h2>
+				<h2>Deseja realmente remover o tema abaixo?</h2>
 
 				<DeleteTopicContainer>{topic.tema}</DeleteTopicContainer>
 

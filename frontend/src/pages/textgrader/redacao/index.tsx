@@ -34,9 +34,6 @@ const Redacao = () => {
 		setIsModalOpen(true);
 	};
 
-	const handleOk = () => setIsModalOpen(false);
-	const handleCancel = () => setIsModalOpen(false);
-
 	const handleChange = (text: string) => setEssay(text);
 
 	const getEssayGrade = async () => {
@@ -50,14 +47,13 @@ const Redacao = () => {
 				`${API_URL}/redacao/avaliacao/`,
 				{
 					essay,
-					id
+					id,
+					title
 				},
 				{
 					headers: { Authorization: `Bearer ${token}` },
 				}
 			);
-
-			// setEssayGrade(response.data.grades);
 
 			message.success("Redação avaliada com sucesso!");
 

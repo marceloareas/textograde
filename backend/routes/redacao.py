@@ -293,6 +293,7 @@ def avaliar_redacao_texto():
         # Obtém os dados da requisição
         redacao_data = request.json
         essay = redacao_data.get('essay')
+        title = redacao_data.get('title')
         id_tema = redacao_data.get('id')
 
         # Verifica se todos os campos necessários foram preenchidos
@@ -312,9 +313,8 @@ def avaliar_redacao_texto():
 
         # Processa a redação
         lines = essay.split('\n')
-        title = lines[0] if lines else "Título não fornecido"
 
-        rest_of_essay = '\n'.join(line for line in lines[1:] if line.strip())
+        formatted_essay = '\n'.join(line.strip() for line in lines if line.strip())
 
         # Avalia a redação
         obj = evaluate_redacao(essay)
@@ -325,7 +325,7 @@ def avaliar_redacao_texto():
         # Estrutura de dados para salvar a redação
         essay_data = {
             "titulo": title,
-            "texto": rest_of_essay.strip(),
+            "texto": formatted_essay.strip(),
             "nota_competencia_1_model": grades['nota1'],
             "nota_competencia_2_model": grades['nota2'],
             "nota_competencia_3_model": grades['nota3'],
