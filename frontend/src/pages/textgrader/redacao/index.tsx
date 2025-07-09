@@ -11,11 +11,8 @@ import TextEditor from "@/components/textEditor";
 import { UploadProps } from "antd/lib";
 
 const Redacao = () => {
-	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [essay, setEssay] = useState<string>("");
 	const [essayFromImage, setEssayFromImage] = useState<string>("");
-	// const [essayGrade, setEssayGrade] = useState(null);
-	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const router = useRouter();
 	const { id, t } = router.query;
 	const { token } = useAuth();
