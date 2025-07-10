@@ -1,24 +1,23 @@
-import { Tabs, Button, Modal, Tooltip, message, Select, Space } from "antd";
+import { Tabs } from "antd";
 import { useState, useEffect } from "react";
-import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
-import Link from "next/link";
 import { useAuth } from "../../context";
-import CustomTable from "../../components/customTable";
-import ModalDetalhesTema from "@/components/modalDetalhesTema";
-import ModalDetalhesRedacao from "@/components/modalDetalhesRedacao";
-import { API_URL } from "@/config/config";
+import { client } from "../../services/client";
+import { TopicsView } from "../../../layout/dashboard/views/topics";
+import { useRouter } from "next/router";
+import withSession from "../../hoc/withSession";
+import { UrlQueryControl } from "@/utils/urlQueryControl";
+import { EssaysView } from "../../../layout/dashboard/views/essays";
 
 const { TabPane } = Tabs;
-const { Option } = Select;
 
-export interface Tema {
+export interface Topic {
   _id: string;
   nome_professor: string;
   tema: string;
   descricao: string;
 }
 
-export interface Redacao {
+export interface Essay {
   titulo: string;
   texto: string;
   nota_total: number;
@@ -27,7 +26,6 @@ export interface Redacao {
   nota_competencia_3_model: number;
   nota_competencia_4_model: number;
   nota_competencia_5_model: number;
-  nota_professor: number;
   nota_competencia_1_professor: number;
   nota_competencia_2_professor: number;
   nota_competencia_3_professor: number;
@@ -40,365 +38,196 @@ export interface Redacao {
 }
 
 const Index = () => {
-  const [activeKey, setActiveKey] = useState<string>("1");
-  const [temasData, setTemasData] = useState<Tema[]>([]);
-  const [redacoesData, setRedacoesData] = useState<Redacao[]>([]);
-  const [alunos, setAlunos] = useState<any[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [redacaoModalVisible, setRedacaoModalVisible] = useState(false);
-  const [selectedTema, setSelectedTema] = useState<Tema | null>(null);
-  const [selectedRedacao, setSelectedRedacao] = useState<Redacao | null>(null);
-  const [filter, setFilter] = useState<string>("todos");
-  const [filterAluno, setFilterAluno] = useState<string>("todos");
-  const { isLoggedIn, tipoUsuario, nomeUsuario } = useAuth();
+	const router = useRouter();
+	const { tab } = router.query;
 
-  // Função para obter o token de autenticação do cookie
-  const getAuthToken = () => {
-    const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("auth_token="));
-    return token ? token.split("=")[1] : null;
-  };
+	const { tipoUsuario, nomeUsuario } = useAuth();
 
-  const handleTabChange = (key: string) => {
-    setActiveKey(key);
-  };
+	const [topicsData, setTopicsData] = useState<Topic[]>([]);
+	const [essaysData, setEssaysData] = useState<Essay[]>([]);
 
-  const openModal = (tema: any) => {
-    setSelectedTema(tema);
-    setModalVisible(true);
-  };
+	const [categorizedEssaysData, setCategorizedEssaysData] = useState<Essay[]>([]);
+	const [categorizedTopicsData, setCategorizedTopicsData] = useState<Topic[]>([]);
+	
+	const [filteredTopicsData, setFilteredTopicsData] = useState<Topic[]>([]);
+	
+	const [activeKey, setActiveKey] = useState<string>("1");
 
-  const openRedacaoModal = (redacao: any) => {
-    setSelectedRedacao(redacao);
-    setRedacaoModalVisible(true);
-  };
+	const [filterEssayTopicsType, setFilterEssayTopicsType] = useState<string>("todos");
+	const [filterTopicsType, setFilterTopicsType] = useState<string>("todos");
 
-  useEffect(() => {
-    const fetchTemas = async () => {
-      try {
-        const token = getAuthToken();
-        const response = await fetch(`${API_URL}/tema`, {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-        });
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setTemasData(data);
-        } else {
-          console.error("Dados inválidos recebidos para temas:", data);
-          setTemasData([]);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar os temas:", error);
-        setTemasData([]);
-      }
-    };
+	const [topicSearchValue, setTopicSearchValue] = useState("");
+	const [essaySearchValue, setEssaySearchValue] = useState("");
 
-    fetchTemas();
-  }, []);
+	const [filteredEssaysData, setFilteredEssaysData] = useState<Essay[]>([]);
 
-  useEffect(() => {
-    const fetchRedacoes = async () => {
-      try {
-        const token = getAuthToken();
-        let url = `${API_URL}/redacao`;
-        if (tipoUsuario === "aluno") {
-          url += `?user=${nomeUsuario}`;
-        }
-        const response = await fetch(url, {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-        });
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setRedacoesData(data);
-        } else {
-          console.error("Dados inválidos recebidos para redações:", data);
-          setRedacoesData([]);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar as redações:", error);
-        setRedacoesData([]);
-      }
-    };
+	const handleTabChange = async (key: string) => {
+		setActiveKey(key);
 
-    fetchRedacoes();
-  }, [tipoUsuario, nomeUsuario]);
+		if (key === "1") {
+			await router.push(
+                UrlQueryControl("textgrader", router.query, [
+                    {
+                        key: "tab",
+                        value: "temas",
+                    },
+                ]),
+                undefined,
+                { shallow: true }
+            );
+		} else if (key === "2") {
+			await router.push(
+                UrlQueryControl("textgrader", router.query, [
+                    {
+                        key: "tab",
+                        value: "redacoes",
+                    },
+                ]),
+                undefined,
+                { shallow: true }
+            );
+		}
+	};
 
-  useEffect(() => {
-    const fetchAlunos = async () => {
-      try {
-        const token = getAuthToken();
-        const response = await fetch(`${API_URL}/alunos`, {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-        });
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setAlunos(data);
-        } else {
-          console.error("Dados inválidos recebidos para alunos:", data);
-          setAlunos([]);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar alunos:", error);
-        setAlunos([]);
-      }
-    };
+	useEffect(() => {
+		const fetchTemas = async () => {
+			try {
+				const { data } = await client.get("/tema");
+				
+				if (Array.isArray(data)) {
+					setTopicsData(data);
+				} else {
+					setTopicsData([]);
+				}
+			} catch (error) {
+				setTopicsData([]);
+			}
+		};
+		
+		fetchTemas();
 
-    fetchAlunos();
-  }, []);
+		return () => {
+		setTopicSearchValue("");
+		setEssaySearchValue("");
+		setFilterTopicsType("todos");
+		setActiveKey("1");
+		setTopicsData([]);
+		setFilteredTopicsData([]);
+		setEssaysData([]);
+		}
+	}, []);
 
-  const handleDeleteTema = async (id: string) => {
-    try {
-      const token = getAuthToken();
-      const response = await fetch(`${API_URL}/tema/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
+	useEffect(() => {
+		const fetchRedacoes = async () => {
+			try {
+				const { data } = await client.get(`/redacao${tipoUsuario === "aluno" ? `?user=${nomeUsuario}` : ""}`);
+				
+				if (Array.isArray(data)) {
+					setEssaysData(data);
+				} else {
+					setEssaysData([]);
+				}
+			} catch (error) {
+				setEssaysData([]);
+			}
+		};
 
-      if (response.ok) {
-        setTemasData(temasData.filter((tema) => tema._id !== id));
-        message.success("Tema deletado com sucesso!");
-      }
-    } catch (error) {
-      console.error("Erro ao deletar o tema:", error);
-      message.error("Erro ao deletar o tema. Por favor, tente novamente.");
-    }
-  };
+		fetchRedacoes();
+	}, [tipoUsuario, nomeUsuario]);
 
-  const handleTemaEditado = (temaEditado: Tema) => {
-    setTemasData(
-      temasData.map((tema) =>
-        tema._id === temaEditado._id ? temaEditado : tema
-      )
-    );
-  };
+	useEffect(() => {
+		if (filterTopicsType === "todos") {
+			setCategorizedTopicsData(topicsData);
+			setFilteredTopicsData(topicsData);
+		} else if (filterTopicsType === "meus") {
+			setCategorizedTopicsData(
+				topicsData.filter((tema) => tema.nome_professor === nomeUsuario)
+			);
 
-  const handleRedacaoEditado = (redacaoEditado: Redacao) => {
-    setRedacoesData(
-      redacoesData.map((redacao) =>
-        redacao._id === redacaoEditado._id ? redacaoEditado : redacao
-      )
-    );
-  };
+			setFilteredTopicsData(
+				topicsData.filter((tema) => tema.nome_professor === nomeUsuario)
+			);
+		}
+	}, [filterTopicsType, nomeUsuario, topicsData]);
+	
+	useEffect(() => {
+		if (filterEssayTopicsType === "todos") {
+			setCategorizedEssaysData(essaysData);
+			setFilteredEssaysData(essaysData);
+		} else if (filterEssayTopicsType === "meus") {
+			const filteredEssays = essaysData.filter((redacao) => {
+				return topicsData.find(
+				(tema) =>
+					tema._id === redacao.id_tema && tema.nome_professor === nomeUsuario
+				);
+			});
 
-  const getTemaNome = (id_tema: string): string => {
-    const tema = temasData.find((tema) => tema._id === id_tema);
-    return tema ? tema.tema : "Tema não encontrado";
-  };
+			setCategorizedEssaysData(filteredEssays);
+			setFilteredEssaysData(filteredEssays);
+		}
+	}, [filterEssayTopicsType, essaysData, topicsData, nomeUsuario]);
 
-  const handleFilterTemas = () => {
-    return temasData.filter((tema) => tema.nome_professor === nomeUsuario);
-  };
+	useEffect(() => {    
+		const newTopics = categorizedTopicsData.filter((topic) =>
+			topic.tema.toLowerCase().includes(topicSearchValue.toLowerCase()) ||
+			topic.nome_professor.toLowerCase().includes(topicSearchValue.toLowerCase())
+		)
 
-  const handleFilterRedacoes = () => {
-    if (filter === "meus") {
-      return redacoesData.filter((redacao) => {
-        return temasData.find(
-          (tema) =>
-            tema._id === redacao.id_tema && tema.nome_professor === nomeUsuario
-        );
-      });
-    }
+		setFilteredTopicsData(newTopics);
+	}, [categorizedTopicsData, topicSearchValue]);
+	
+	useEffect(() => {
+		const newEssays = categorizedEssaysData.filter((essay) =>
+			essay.titulo.toLowerCase().includes(essaySearchValue.toLowerCase()) ||
+			essay.aluno.toLowerCase().includes(essaySearchValue.toLowerCase()) ||
+			topicsData.find((tema) =>
+				tema._id === essay.id_tema)
+					?.tema.toLowerCase()
+					.includes(essaySearchValue.toLowerCase()
+			)
+		);
 
-    if (filterAluno !== "todos") {
-      return redacoesData.filter((redacao) => {
-        redacao.aluno === filterAluno;
-      });
-    }
-    return redacoesData;
-  };
+		setFilteredEssaysData(newEssays);
+	}, [essaySearchValue]);
 
-  const temasColumns = [
-    {
-      title: "Professor",
-      dataIndex: "nome_professor",
-      key: "nome_professor",
-      ellipsis: true,
-    },
-    {
-      title: "Tema",
-      dataIndex: "tema",
-      key: "tema",
-      render: (text: string, record: Tema) => (
-        <Tooltip
-          title={tipoUsuario === "aluno" ? "Detalhes do tema" : "Editar tema"}
-        >
-          <Button type="link" onClick={() => openModal(record)}>
-            {text}
-          </Button>
-        </Tooltip>
-      ),
-      ellipsis: true,
-    },
-    {
-      title: "Descrição",
-      dataIndex: "descricao",
-      key: "descricao",
-      ellipsis: true,
-    },
-    {
-      title: "Ações",
-      key: "acoes",
-      render: (record: Tema) =>
-        tipoUsuario === "professor" && record.nome_professor === nomeUsuario ? (
-          <Tooltip title="Deletar tema">
-            <Button
-              onClick={() => handleDeleteTema(record._id)}
-              danger
-              icon={<DeleteOutlined />}
-            />
-          </Tooltip>
-        ) : (
-          tipoUsuario === "aluno" && (
-            <Link href={`/textgrader/redacao?id=${record._id}`}>
-              <PlusOutlined style={{ fontSize: "16px", marginRight: "8px" }} />
-              Inserir Nova Redação
-            </Link>
-          )
-        ),
-    },
-  ];
+	useEffect(() => {
+		if (tab === "temas") {
+			setActiveKey("1");
+		} else if (tab === "redacoes") {
+			setActiveKey("2");
+		}
+	}, [tab]);
 
-  const redacaoColumns = [
-    {
-      title: "Título",
-      dataIndex: "titulo",
-      key: "titulo",
-      render: (text: string, record: Redacao) => (
-        <Tooltip
-          title={
-            tipoUsuario === "aluno" ? "Visualizar redação" : "Corrigir redação"
-          }
-        >
-          <Button type="link" onClick={() => openRedacaoModal(record)}>
-            {text}
-          </Button>
-        </Tooltip>
-      ),
-      ellipsis: true,
-    },
-    { title: "Aluno", dataIndex: "aluno", key: "aluno", ellipsis: true },
-    {
-      title: "Tema",
-      dataIndex: "id_tema",
-      key: "id_tema",
-      render: (id_tema: string) => getTemaNome(id_tema),
-      ellipsis: true,
-    },
-    {
-      title: "Nota total",
-      dataIndex: "nota_total",
-      key: "nota_total",
-      align: "center",
-      ellipsis: true,
-    },
-    {
-      title: "Nota Professor",
-      dataIndex: "nota_professor",
-      key: "nota_professor",
-      align: "center",
-      ellipsis: true,
-    },
-  ];
+	return (
+		<div style={{ padding: "0 20px 0 20px", width: "100vw" }}>
+			<Tabs
+				activeKey={activeKey}
+				onChange={handleTabChange}
+				style={{ flex: 1 }}
+			>
+	            <TabPane tab="Temas" key="1">
+					<TopicsView
+						filteredTopicsData={filteredTopicsData}
+						setFilterTopicsType={setFilterTopicsType}
+						topicsData={topicsData}
+						setTopicsData={setTopicsData}
+						setTopicSearchValue={setTopicSearchValue}
+					/>
+				</TabPane>
 
-  return (
-    <div style={{ padding: "0 20px 0 20px", width: "100vw" }}>
-      <Tabs
-        activeKey={activeKey}
-        onChange={handleTabChange}
-        style={{ flex: 1 }}
-      >
-        <TabPane tab="Temas" key="1">
-          <Space style={{ marginBottom: 16 }}>
-            {tipoUsuario === "professor" && (
-              <Link href="/textgrader/tema">
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  style={{ marginRight: 8 }}
-                >
-                  Adicionar Tema
-                </Button>
-              </Link>
-            )}
-            {tipoUsuario === "professor" && (
-              <Select
-                defaultValue="todos"
-                style={{ width: 140 }}
-                onChange={(value) => setFilter(value)}
-              >
-                <Option value="todos">Todos os Temas</Option>
-                <Option value="meus">Meus Temas</Option>
-              </Select>
-            )}
-          </Space>
-          {isLoggedIn && (
-            <CustomTable
-              dataSource={filter === "meus" ? handleFilterTemas() : temasData}
-              columns={temasColumns}
-            />
-          )}
-        </TabPane>
-        <TabPane tab="Redações" key="2">
-          <Space style={{ marginBottom: 16 }}>
-            {tipoUsuario === "professor" && (
-              <Select
-                defaultValue="todos"
-                style={{ width: 200 }}
-                onChange={(value) => setFilter(value)}
-              >
-                <Option value="todos">Todas as Redações</Option>
-                <Option value="meus">Redações dos meus temas</Option>
-              </Select>
-            )}
-            {tipoUsuario === "professor" && (
-              <Select
-                defaultValue="todos"
-                style={{ width: 200 }}
-                onChange={(value) => setFilterAluno(value)}
-              >
-                <Option value="todos">Todos os Alunos</Option>
-                {Array.isArray(alunos) &&
-                  alunos.map((aluno) => (
-                    <Option key={aluno._id} value={aluno.username}>
-                      {aluno.username}
-                    </Option>
-                  ))}
-              </Select>
-            )}
-          </Space>
-          {isLoggedIn && (
-            <CustomTable
-              dataSource={handleFilterRedacoes()}
-              columns={redacaoColumns}
-            />
-          )}
-        </TabPane>
-      </Tabs>
-
-      <ModalDetalhesTema
-        open={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        tema={selectedTema}
-        onTemaEditado={handleTemaEditado}
-      />
-
-      <ModalDetalhesRedacao
-        open={redacaoModalVisible}
-        onCancel={() => setRedacaoModalVisible(false)}
-        redacao={selectedRedacao}
-        onRedacaoEditado={handleRedacaoEditado}
-      />
-    </div>
-  );
+				<TabPane tab="Redações" key="2">
+					<EssaysView
+						essaysData={essaysData}
+						setEssaysData={setEssaysData}
+						setFilterEssayTopicsType={setFilterEssayTopicsType}
+						setEssaySearchValue={setEssaySearchValue}
+						topicsData={topicsData}
+						filteredEssaysData={filteredEssaysData}
+					/>
+				</TabPane>
+			</Tabs>
+		</div>
+	);
 };
 
-export default Index;
+export default withSession(Index);

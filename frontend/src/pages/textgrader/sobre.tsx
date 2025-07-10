@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import styled from "styled-components";
 import { Card, Layout } from "antd";
+import { client } from "../../services/client";
 
 const StyledLayout = styled(Layout)`
   display: flex;
@@ -64,8 +65,8 @@ const Sobre = () => {
   const [content, setContent] = useState("");
 
   useEffect(() => {
-    fetch("/Sobre.md")
-      .then((response) => response.text())
+    client.get("/Sobre.md")
+      .then((response) => response.data)
       .then((text) => setContent(text));
   }, []);
 

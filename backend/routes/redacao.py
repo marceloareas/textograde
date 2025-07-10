@@ -1,9 +1,10 @@
+from io import BytesIO
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from pymongo import MongoClient
 from bson import ObjectId
 import os
-from functions import persist_essay, get_text
+from functions import persist_essay, get_text, read_text_from_image
 
 redacao_bp = Blueprint('redacao', __name__)
 
@@ -33,11 +34,11 @@ def validate_tema(id_tema):
 def evaluate_redacao(texto):
     # Simulando notas para teste
     return {
-        "nota_1": 800,
-        "nota_2": 800,
-        "nota_3": 800,
-        "nota_4": 800,
-        "nota_5": 800
+        "nota_1": 40,
+        "nota_2": 80,
+        "nota_3": 120,
+        "nota_4": 160,
+        "nota_5": 200
     }
 
 # Função para verificar se a redação pertence ao aluno autenticado
@@ -55,12 +56,19 @@ def get_redacoes():
     Retorna todas as redações, com a opção de filtrar por aluno.
     """
     redacoes_collection = db.redacoes
-    username = request.args.get("username")
 
-    if username is not None:
-        redacoes = list(redacoes_collection.find({"aluno": username}))
+    # Obtém o usuário autenticado do token JWT
+    current_user_email = get_jwt_identity()
+    current_user = db.users.find_one({"email": current_user_email})
+
+    if current_user["tipoUsuario"] == "aluno":
+        redacoes = list(redacoes_collection.find({"aluno": current_user["username"]}))
     else:
-        redacoes = list(redacoes_collection.find())
+        username = request.args.get("username")
+        if username is not None:
+            redacoes = list(redacoes_collection.find({"aluno": username}))
+        else:
+            redacoes = list(redacoes_collection.find())
 
     for redacao in redacoes:
         redacao['_id'] = str(redacao['_id'])
@@ -159,7 +167,7 @@ def update_redacao(id):
             else:
                 # Se for admin ou professor, pode alterar as notas
                 for key in ["nota", "nota_competencia_1_model", "nota_competencia_2_model", "nota_competencia_3_model", 
-                            "nota_competencia_4_model", "nota_competencia_5_model", "nota_professor"]:
+                            "nota_competencia_4_model", "nota_competencia_5_model"]:
                     if key in data:
                         update_data[key] = data[key]
 
@@ -172,13 +180,39 @@ def update_redacao(id):
                     "nota_competencia_5_model"
                 ]
                 
-                # Calcula a soma das notas das competências
-                soma_competencias = sum(
-                    [data.get(competencia, redacao.get(competencia, 0)) for competencia in competencias]
-                )
 
-                # Atualiza a nota do professor com a soma das competências
-                update_data["nota_professor"] = soma_competencias
+                competencias_professor = [
+                    "nota_competencia_1_professor",
+                    "nota_competencia_2_professor",
+                    "nota_competencia_3_professor",
+                    "nota_competencia_4_professor",
+                    "nota_competencia_5_professor"
+                ]
+
+                # Adiciona as notas do professor
+                for competencia in competencias_professor:
+                    if competencia in data:
+                        update_data[competencia] = data[competencia]
+
+                # Cálculo da média das notas do modelo
+                media_modelo = sum([
+                    data.get("nota_competencia_1_model", 0),
+                    data.get("nota_competencia_2_model", 0),
+                    data.get("nota_competencia_3_model", 0),
+                    data.get("nota_competencia_4_model", 0),
+                    data.get("nota_competencia_5_model", 0)
+                ]) / 5
+
+                # Cálculo da média das notas do professor (se disponíveis)
+                media_professor = sum([
+                    data.get("nota_competencia_1_professor", 0),
+                    data.get("nota_competencia_2_professor", 0),
+                    data.get("nota_competencia_3_professor", 0),
+                    data.get("nota_competencia_4_professor", 0),
+                    data.get("nota_competencia_5_professor", 0)
+                ]) / 5
+
+        
 
         # Permite que alunos alterem apenas o título da redação
         if "titulo" in data:
@@ -259,6 +293,7 @@ def avaliar_redacao_texto():
         # Obtém os dados da requisição
         redacao_data = request.json
         essay = redacao_data.get('essay')
+        title = redacao_data.get('title')
         id_tema = redacao_data.get('id')
 
         # Verifica se todos os campos necessários foram preenchidos
@@ -278,9 +313,8 @@ def avaliar_redacao_texto():
 
         # Processa a redação
         lines = essay.split('\n')
-        title = lines[0] if lines else "Título não fornecido"
 
-        rest_of_essay = '\n'.join(line for line in lines[1:] if line.strip())
+        formatted_essay = '\n'.join(line.strip() for line in lines if line.strip())
 
         # Avalia a redação
         obj = evaluate_redacao(essay)
@@ -291,14 +325,17 @@ def avaliar_redacao_texto():
         # Estrutura de dados para salvar a redação
         essay_data = {
             "titulo": title,
-            "texto": rest_of_essay.strip(),
+            "texto": formatted_essay.strip(),
             "nota_competencia_1_model": grades['nota1'],
             "nota_competencia_2_model": grades['nota2'],
             "nota_competencia_3_model": grades['nota3'],
             "nota_competencia_4_model": grades['nota4'],
             "nota_competencia_5_model": grades['nota5'],
-            "nota_total": sum(grades.values()),
-            "nota_professor": "",
+            "nota_competencia_1_professor": None,
+            "nota_competencia_2_professor": None,
+            "nota_competencia_3_professor": None,
+            "nota_competencia_4_professor": None,
+            "nota_competencia_5_professor": None,
             "id_tema": id_tema,
             "aluno": aluno
         }
@@ -374,3 +411,32 @@ def avaliar_redacao_imagem():
 
     persist_essay(essay, obj)
     return response
+
+@redacao_bp.post("/image-to-text")
+@jwt_required()
+def ocr_imagem():
+    """
+    Recebe uma imagem e retorna o texto extraído usando Azure OCR.
+    Permitido para usuários autenticados (admin ou aluno).
+    """
+    try:
+        current_user_email = get_jwt_identity()
+        current_user = db.users.find_one({"email": current_user_email})
+
+        if not check_user_permission(current_user):
+            return jsonify({"message": "Você não tem permissão para utilizar essa funcionalidade."}), 403
+
+        if 'imagem' not in request.files:
+            return jsonify({"error": "Nenhuma imagem enviada."}), 400
+
+        file = request.files['imagem']
+        if file.filename == '':
+            return jsonify({"error": "Nome de arquivo inválido."}), 400
+
+        image_stream = BytesIO(file.read())
+        texto_extraido = read_text_from_image(image_stream)
+
+        return jsonify({"text": texto_extraido}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

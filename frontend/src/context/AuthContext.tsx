@@ -1,127 +1,142 @@
 import {
-  createContext,
-  useState,
-  useEffect,
-  useContext,
-  ReactNode,
-  useCallback,
+	createContext,
+	useState,
+	useEffect,
+	useContext,
+	ReactNode,
+	useCallback,
+	useRef,
 } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { API_URL } from "../config/config";
-import { message } from "antd";
 
-// Define o tipo do contexto de autenticação
+const LOGIN_ROUTE = "/login";
+const HOME_ROUTE = "/textgrader/";
+
+interface LoginResponse {
+	access_token: string;
+	nomeUsuario: string;
+	tipoUsuario: "admin" | "professor" | "aluno";
+}
+
 type AuthContextType = {
-  isLoggedIn: boolean;
-  nomeUsuario: string;
-  tipoUsuario: "admin" | "professor" | "aluno" | "";
-  token: string | null; // Adicionando a propriedade 'token'
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+	isLoggedIn: boolean;
+	nomeUsuario: string;
+	tipoUsuario: "admin" | "professor" | "aluno" | "";
+	token: string | null;
+	login: (email: string, password: string) => Promise<void>;
+	logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Função para obter o token armazenado nos cookies
-const getAuthToken = () => {
-  const token = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith("auth_token="));
-  return token ? token.split("=")[1] : null;
+export const getAccessToken = async (): Promise<string | null> => {
+	try {
+		const isClient = typeof window === "object";
+		return isClient ? window.localStorage.getItem("accessToken") : null;
+	} catch (err) {
+		throw new Error("Could not retrieve refresh token");
+	}
 };
 
-// Fornecendo o contexto de autenticação para a aplicação
+export const getResetPasswordAccessToken = async (): Promise<string | null> => {
+	try {
+		const isClient = typeof window === "object";
+		return isClient ? window.localStorage.getItem("resetPasswordAccessToken") : null;
+	} catch (err) {
+		throw new Error("Could not retrieve refresh token");
+	}
+};
+
+const getAuthToken = async () => await getAccessToken();
+const setAuthToken = (token: string) => localStorage.setItem("accessToken", token);
+const removeAuthToken = () => localStorage.removeItem("accessToken");
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [nomeUsuario, setNomeUsuario] = useState("");
-  const [tipoUsuario, setTipoUsuario] = useState<
-    "admin" | "professor" | "aluno" | ""
-  >("");
-  const [token, setToken] = useState<string | null>(null); // Estado para o token
-  const router = useRouter();
+	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	const [nomeUsuario, setNomeUsuario] = useState("");
+	const [tipoUsuario, setTipoUsuario] = useState<
+		"admin" | "professor" | "aluno" | ""
+	>("");
+	const [token, setToken] = useState<string | null>(null);
+	const router = useRouter();
+	const isMounted = useRef(true);
 
-  // Função de login
-  const login = async (email: string, password: string) => {
-    try {
-      const { data } = await axios.post(`${API_URL}/login`, {
-        email,
-        password,
-      });
+	const login = useCallback(async (email: string, password: string) => {
+		const { data } = await axios.post<LoginResponse>(`${API_URL}/login`, {
+			email,
+			password,
+		});
 
-      // Salva o token de autenticação no cookie e no estado
-      document.cookie = `auth_token=${data.access_token}; path=/`;
-      setToken(data.access_token);
+		setAuthToken(data.access_token);
+		setToken(data.access_token);
+		setIsLoggedIn(true);
+		setNomeUsuario(data.nomeUsuario);
+		setTipoUsuario(data.tipoUsuario);
 
-      // Atualiza os dados do usuário
-      setIsLoggedIn(true);
-      setNomeUsuario(data.nomeUsuario);
-      setTipoUsuario(data.tipoUsuario);
+		router.push(HOME_ROUTE);
+	}, [router]);
 
-      // Redireciona para a página principal
-      router.push("/textgrader/");
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        message.error(
-          error.response?.data?.error ||
-            "Erro ao realizar login! Por favor, tente novamente."
-        );
-      } else {
-        message.error("Ocorreu um erro inesperado");
-        console.error("Erro inesperado:", error);
-      }
-    }
-  };
+	const logout = useCallback(() => {
+		removeAuthToken();
+		setToken(null);
+		setIsLoggedIn(false);
+		setNomeUsuario("");
+		setTipoUsuario("");
+		router.replace(LOGIN_ROUTE);
+	}, [router]);
 
-  // Função de logout
-  const logout = useCallback(() => {
-    document.cookie = `auth_token=; path=/; max-age=0`; // Remove o token
-    setToken(null); // Limpa o token no estado
-    setIsLoggedIn(false);
-    setNomeUsuario("");
-    setTipoUsuario("");
-    router.push("/login");
-  }, [router]);
+	useEffect(() => {
+		const fetchToken = async () => {
+		const tokenFromStorage = await getAuthToken();
 
-  // Checa o token no carregamento inicial
-  useEffect(() => {
-    const tokenFromCookie = getAuthToken();
+		if (tokenFromStorage) {
+			setToken(tokenFromStorage);
+			
+			try {
+				const profile = await axios.get(`${API_URL}/profile`, {
+					headers: { Authorization: `Bearer ${tokenFromStorage}` },
+				});
 
-    if (tokenFromCookie) {
-      setToken(tokenFromCookie); // Atualiza o token se encontrado
-      axios
-        .get(`${API_URL}/profile`, {
-          headers: { Authorization: `Bearer ${tokenFromCookie}` },
-        })
-        .then((response) => {
-          setIsLoggedIn(true);
-          setNomeUsuario(response.data.nomeUsuario);
-          setTipoUsuario(response.data.tipoUsuario); // Atualiza o tipo de usuário
-        })
-        .catch(() => logout()); // Caso o token seja inválido, faz logout
-    }
-  }, [logout]);
+				setIsLoggedIn(true);
+				setNomeUsuario(profile.data.nomeUsuario);
+				setTipoUsuario(profile.data.tipoUsuario);
+			} catch (error) {
+				if (isMounted.current) logout();
+			}
+		}
+		};
 
-  return (
-    <AuthContext.Provider
-      value={{
-        isLoggedIn,
-        nomeUsuario,
-        tipoUsuario,
-        token,
-        login,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+		fetchToken();
+
+		return () => {
+			isMounted.current = false;
+		};
+	}, [logout]);
+
+	return (
+		<AuthContext.Provider
+			value={{
+				isLoggedIn,
+				nomeUsuario,
+				tipoUsuario,
+				token,
+				login,
+				logout,
+			}}
+		>
+			{children}
+		</AuthContext.Provider>
+	);
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+	const context = useContext(AuthContext);
+
+	if (!context) {
+		throw new Error("useAuth must be used within an AuthProvider");
+	}
+
+	return context;
 };

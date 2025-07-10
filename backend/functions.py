@@ -10,18 +10,20 @@ from msrest.authentication import CognitiveServicesCredentials
 from dotenv import load_dotenv
 import os
 import time
+import requests
+from typing import BinaryIO
 load_dotenv()
 
-# Configure sua chave de API da AZURE
-try:
-    load_dotenv()
-    subscription_key = os.getenv('SUBSCRIPTION_KEY')
-    endpoint = os.getenv('ENDPOINT')
-    computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
-except:
-    subscription_key = os.environ('SUBSCRIPTION_KEY'),
-    endpoint = os.environ('ENDPOINT')
-    computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
+#Configure sua chave de API da AZURE
+# try:
+#     load_dotenv()
+#     subscription_key = os.getenv('SUBSCRIPTION_KEY')
+#     endpoint = os.getenv('ENDPOINT')
+#     computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
+# except:
+#     subscription_key = os.environ('SUBSCRIPTION_KEY'),
+#     endpoint = os.environ('ENDPOINT')
+#     computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
 
 def use_vectorizer(df_train):
     vectorizer_vez = pickle.load(open('vectorizer.pkl','rb'))
@@ -34,7 +36,6 @@ def use_vectorizer(df_train):
     return df_vetorizado
 
 def evaluate_redacao(redacao):
-   
     tupla = (redacao, )
     texto_df = pd.DataFrame(tupla,columns = ['texto'])
     modelo_salvo = pickle.load(open('model.pkl','rb'))
@@ -85,3 +86,54 @@ def get_text(imagem):
         return text.strip()
     else:
         return "Erro"
+    
+def send_email(subject, recipient_email, body):
+    response = requests.post(
+        f"https://api.mailgun.net/v3/{os.getenv('MAILGUN_DOMAIN')}/messages",
+        auth=("api", os.getenv('MAILGUN_API_KEY')),
+        data={
+            "from": f"TextGrader <mailgun@{os.getenv('MAILGUN_DOMAIN')}>",
+            "to": [recipient_email],
+            "subject": subject,
+            "text": body
+        }
+    )
+    
+    if response.status_code == 200:
+        print("Email enviado com sucesso!")
+        return True
+    else:
+        print("Falha ao enviar email.")
+        print("Status:", response.status_code)
+        print("Detalhes:", response.text)
+        return False
+
+def read_text_from_image(image_stream: BinaryIO) -> str:
+    subscription_key = os.getenv("AZURE_KEY")
+    endpoint = os.getenv("AZURE_ENDPOINT")
+
+    if not subscription_key or not endpoint:
+        raise EnvironmentError("As variáveis de ambiente AZURE_KEY e AZURE_ENDPOINT devem estar definidas.")
+
+    computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
+
+    read_response = computervision_client.read_in_stream(image_stream, raw=True)
+
+    read_operation_location = read_response.headers["Operation-Location"]
+    operation_id = read_operation_location.split("/")[-1]
+
+    while True:
+        read_result = computervision_client.get_read_result(operation_id)
+        if read_result.status not in ['notStarted', 'running']:
+            break
+        time.sleep(1)
+
+    if read_result.status == OperationStatusCodes.succeeded:
+        lines = []
+        for page in read_result.analyze_result.read_results:
+            for line in page.lines:
+                lines.append(line.text)
+        full_text = "\n".join(lines)
+        return full_text
+    else:
+        raise Exception("A operação de leitura falhou ou não retornou resultado.")
